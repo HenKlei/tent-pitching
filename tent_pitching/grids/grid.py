@@ -72,7 +72,7 @@ class Element:
         return self.label + f" with {len(self.edges)} edges"
 
     def get_vertices(self):
-        return [vertex for edge in self.edges for vertex in edge.get_vertices()]
+        return list(set([vertex for edge in self.edges for vertex in edge.get_vertices()]))
 
     def get_edges(self):
         return self.edges
