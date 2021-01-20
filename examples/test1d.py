@@ -1,7 +1,7 @@
 import numpy as np
 
 from tent_pitching import perform_tent_pitching
-from tent_pitching.grid import Vertex, Edge, Element, Grid
+from tent_pitching.grids import Vertex, Edge, Element, Grid
 from tent_pitching.visualization import plot_1d_space_time_mesh
 
 
@@ -17,9 +17,9 @@ element2 = Element([edge2,], label="Element 2")
 element3 = Element([edge3,], label="Element 2")
 elements = [element1, element2, element3]
 grid = Grid(elements)
-t_max = 1.
+T_MAX = 1.
 characteristic_speed = lambda x: 1.0
 
-space_time_mesh = perform_tent_pitching(grid, t_max, characteristic_speed)
+space_time_mesh = perform_tent_pitching(grid, T_MAX, characteristic_speed)
 
 plot_1d_space_time_mesh(space_time_mesh)

@@ -1,4 +1,4 @@
-from tent_pitching.grid import SpaceTimeMesh
+from tent_pitching.grids import SpaceTimeMesh
 
 
 def perform_tent_pitching(space_grid, t_max, characteristic_speed, n_max=1000, log=True):
