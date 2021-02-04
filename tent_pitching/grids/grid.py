@@ -25,24 +25,24 @@ class Vertex:
 
 
 class Edge:
-    def __init__(self, vertex1, vertex2, label=""):
-        assert vertex1.dim == vertex2.dim
+    def __init__(self, vertex0, vertex1, label=""):
+        assert vertex0.dim == vertex1.dim
+        self.vertex0 = vertex0
         self.vertex1 = vertex1
-        self.vertex2 = vertex2
         self.label = label
 
-        self.length = np.linalg.norm(vertex1.coordinates - vertex2.coordinates)
+        self.length = np.linalg.norm(vertex0.coordinates - vertex1.coordinates)
 
+        self.vertex0.incident_edges.append(self)
         self.vertex1.incident_edges.append(self)
-        self.vertex2.incident_edges.append(self)
 
         self.incident_elements = []
 
     def __str__(self):
-        return self.label + f" between ({self.vertex1}) and ({self.vertex2}); length: {self.length}"
+        return self.label + f" between ({self.vertex0}) and ({self.vertex1}); length: {self.length}"
 
     def get_vertices(self):
-        return [self.vertex1, self.vertex2]
+        return [self.vertex0, self.vertex1]
 
     def get_maximum_speed_on_incident_elements(self, characteristic_speed):
         speed = 0.
@@ -53,11 +53,10 @@ class Edge:
 
 
 class Element:
-    def __init__(self, edges, local_subgrid=None, label=""):
+    def __init__(self, edges, label=""):
         self.edges = edges
         for edge in self.edges:
             edge.incident_elements.append(self)
-        self.local_subgrid = local_subgrid
         self.label = label
 
         for vertex in self.get_vertices():
@@ -80,10 +79,6 @@ class Element:
     def get_maximum_speed(self, characteristic_speed):
         return characteristic_speed(self.get_vertices()[0].coordinates) # Do something more elaborate here!
 
-    def uniform_subgrid(self, h):
-        # !!!! Construct a uniform subgrid of the element !!!!
-        pass
-
 
 class Grid:
     def __init__(self, elements):
@@ -95,7 +90,7 @@ class Grid:
         self.shape_regularity_constant = 1. # compute a reasonable value here!
 
     def get_vertices(self):
-        return set([vertex for element in self.elements for vertex in element.get_vertices()])
+        return list(set([vertex for element in self.elements for vertex in element.get_vertices()]))
 
     def get_edges(self):
-        return set([edge for element in self.elements for edge in element.get_edges()])
+        return list(set([edge for element in self.elements for edge in element.get_edges()]))

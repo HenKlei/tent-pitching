@@ -20,4 +20,8 @@ def plot_1d_space_time_mesh(space_time_mesh):
     for vertex in space_time_mesh.space_time_vertices:
         ax.plot(*vertex.coordinates, marker='o', color='lightblue')
 
+    ax.set_xlabel("x")
+    ax.set_ylabel("t")
+    ax.set_aspect("equal")
+
     plt.show()
