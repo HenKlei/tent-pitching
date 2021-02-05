@@ -21,8 +21,8 @@ class SpaceTimeTent:
 
         self.space_time_vertices = space_time_vertices
 
-    def get_space_patch_elements(self):
-        return self.base_space_time_vertex.space_vertex.patch_elements
+    def get_space_patch(self):
+        return self.base_space_time_vertex.space_vertex.patch
 
 
 class AdvancingFront:
@@ -35,7 +35,7 @@ class AdvancingFront:
         self.potential_pitch_locations = set(list(self.space_time_vertices))
 
         for vertex in self.space_time_vertices:
-            vertex.potential_tent_height = np.min([edge.length * self.space_grid.shape_regularity_constant / edge.get_maximum_speed_on_incident_elements(characteristic_speed) for edge in vertex.space_vertex.incident_edges])
+            vertex.potential_tent_height = np.min([element.length * self.space_grid.shape_regularity_constant / element.get_maximum_speed(characteristic_speed) for element in vertex.space_vertex.patch.elements])
 
     def get_feasible_vertex(self):
         if len(self.potential_pitch_locations) > 0:
@@ -74,23 +74,23 @@ class SpaceTimeMesh:
         for vertex in self.advancing_front.space_time_vertices:
             if vertex.space_vertex in space_time_vertex.space_vertex.get_adjacent_vertices() or vertex.space_vertex == space_time_vertex.space_vertex:
                 vertex.potential_tent_height = self.t_max - vertex.time
-                for edge in vertex.space_vertex.incident_edges:
+                for element in vertex.space_vertex.patch.elements:
                     other_vertex = None
                     for v in self.advancing_front.space_time_vertices:
-                        if v.space_vertex in edge.get_vertices() and v is not vertex:
+                        if v.space_vertex in element.get_vertices() and v is not vertex:
                             other_vertex = v
                             break
                     assert other_vertex is not None
-                    vertex.potential_tent_height = np.min([vertex.potential_tent_height, other_vertex.time - vertex.time + edge.length * self.space_grid.shape_regularity_constant / edge.get_maximum_speed_on_incident_elements(self.characteristic_speed)])
+                    vertex.potential_tent_height = np.min([vertex.potential_tent_height, other_vertex.time - vertex.time + element.length * self.space_grid.shape_regularity_constant / element.get_maximum_speed(self.characteristic_speed)])
 
-                tent_height_on_flat_front = np.min([edge.length * self.space_grid.shape_regularity_constant / edge.get_maximum_speed_on_incident_elements(self.characteristic_speed) for edge in vertex.space_vertex.incident_edges])
+                tent_height_on_flat_front = np.min([element.length * self.space_grid.shape_regularity_constant / element.get_maximum_speed(self.characteristic_speed) for element in vertex.space_vertex.patch.elements])
                 if vertex.potential_tent_height >= np.min([self.gamma * tent_height_on_flat_front, self.t_max - vertex.time]) and vertex.potential_tent_height > 0.:
                     self.advancing_front.potential_pitch_locations.update([vertex,])
                 elif vertex in self.advancing_front.potential_pitch_locations:
                     self.advancing_front.potential_pitch_locations.remove(vertex)
 
     def check_space_time_vertices_adjacent(self, v1, v2):
-        for edge in self.space_grid.get_edges():
-            if v1.space_vertex in edge.get_vertices() and v2.space_vertex in edge.get_vertices():
+        for element in self.space_grid.elements:
+            if v1.space_vertex in element.get_vertices() and v2.space_vertex in element.get_vertices():
                 return True
         return False
