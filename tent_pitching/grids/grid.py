@@ -1,19 +1,16 @@
-import numpy as np
-
 from tent_pitching.grids import Patch
 
 
 class Vertex:
-    def __init__(self, coordinates, label=""):
-        assert len(coordinates) == 1
-        self.coordinates = coordinates
+    def __init__(self, coordinate, label=""):
+        self.coordinate = coordinate
         self.label = label
 
         self.patch_elements = []
         self.patch = None
 
     def __str__(self):
-        return self.label + f" at {self.coordinates}"
+        return self.label + f" at {self.coordinate}"
 
     def get_adjacent_vertices(self):
         adjacent_vertices = []
@@ -26,17 +23,35 @@ class Vertex:
         return list(filter((self).__ne__, adjacent_vertices))
 
     def init_patch(self):
+        assert len(self.patch_elements) <= 2
         self.patch = Patch(self)
+
+    def get_left_element(self):
+        for element in self.patch_elements:
+            if element.vertex_left.coordinate < self.coordinate:
+                return element
+        assert len(self.patch_elements) == 1
+        return None
+
+    def get_right_element(self):
+        for element in self.patch_elements:
+            if element.vertex_right.coordinate > self.coordinate:
+                return element
+        assert len(self.patch_elements) == 1
+        return None
+
+    def is_boundary_vertex(self):
+        return (self.get_right_element() is None or self.get_left_element() is None)
 
 
 class Element:
     def __init__(self, vertex_left, vertex_right, label=""):
-        assert vertex_left.coordinates < vertex_right.coordinates
+        assert vertex_left.coordinate < vertex_right.coordinate
         self.vertex_left = vertex_left
         self.vertex_right = vertex_right
         self.label = label
 
-        self.length = np.linalg.norm(self.vertex_left.coordinates - self.vertex_right.coordinates)
+        self.length = self.vertex_right.coordinate - self.vertex_left.coordinate
 
         self.vertex_left.patch_elements.append(self)
         self.vertex_right.patch_elements.append(self)
@@ -44,11 +59,21 @@ class Element:
     def __str__(self):
         return self.label
 
+    def __contains__(self, x):
+        return self.vertex_left.coordinate <= x <= self.vertex_right.coordinate
+
     def get_vertices(self):
         return [self.vertex_left, self.vertex_right,]
 
     def get_maximum_speed(self, characteristic_speed):
-        return characteristic_speed(self.get_vertices()[0].coordinates) # Do something more elaborate here!
+        return characteristic_speed(self.get_vertices()[0].coordinate) # Do something more elaborate here!
+
+    def to_local(self, x):
+        assert x in self
+        return (x - self.vertex_left.coordinate) / self.length
+
+    def to_global(self, x):
+        return self.vertex_left.coordinate + x * self.length
 
 
 class Grid:

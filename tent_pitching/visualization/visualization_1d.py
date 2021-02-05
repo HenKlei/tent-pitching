@@ -12,16 +12,16 @@ def plot_1d_space_time_mesh(space_time_mesh):
             for v2 in tent.space_time_vertices:
                 if v1 != v2 and space_time_mesh.check_space_time_vertices_adjacent(v1, v2):
                     if v1.space_vertex == v2.space_vertex:
-                        line = Line2D([v1.coordinates[0], v2.coordinates[0]], [v1.coordinates[1], v2.coordinates[1]], linewidth=0.5, linestyle="--", color="green")
+                        line = Line2D([v1.coordinates[0], v2.coordinates[0]], [v1.coordinates[1], v2.coordinates[1]], linewidth=0.5, linestyle='--', color='green')
                     else:
-                        line = Line2D([v1.coordinates[0], v2.coordinates[0]], [v1.coordinates[1], v2.coordinates[1]], linewidth=1, linestyle="-", color="blue")
+                        line = Line2D([v1.coordinates[0], v2.coordinates[0]], [v1.coordinates[1], v2.coordinates[1]], linewidth=1, linestyle='-', color='blue')
                     ax.add_line(line)
 
     for vertex in space_time_mesh.space_time_vertices:
         ax.plot(*vertex.coordinates, marker='o', color='lightblue')
 
-    ax.set_xlabel("x")
-    ax.set_ylabel("t")
-    ax.set_aspect("equal")
+    ax.set_xlabel('x')
+    ax.set_ylabel('t')
+    ax.set_aspect('equal')
 
     plt.show()
