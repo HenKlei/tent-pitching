@@ -28,20 +28,32 @@ class Patch:
             return .5 + self.element_right.to_local(x) / 2.
         return self.element_left.to_local(x) / 2.
 
-    def to_global(self, x):
-        assert 0. <= x <= 1.
+    def to_global(self, x_ref):
+        assert 0. <= x_ref <= 1.
 
         if self.element_right is None:
-            return self.element_left.to_global(x)
+            return self.element_left.to_global(x_ref)
         if self.element_left is None:
-            return self.element_right.to_global(x)
+            return self.element_right.to_global(x_ref)
 
-        if x >= .5:
-            return self.element_right.to_global((x - .5) * 2.)
-        return self.element_left.to_global(2. * x)
+        if x_ref >= .5:
+            return self.element_right.to_global((x_ref - .5) * 2.)
+        return self.element_left.to_global(2. * x_ref)
+
+    def to_global_derviative(self, x_ref):
+        assert 0. <= x_ref <= 1.
+
+        if self.element_right is None:
+            return self.element_left.to_global_derivative(x_ref)
+        if self.element_left is None:
+            return self.element_right.to_global_derivative(x_ref)
+
+        if x_ref >= .5:
+            return self.element_right.to_global_derivative((x_ref - .5) * 2.)
+        return self.element_left.to_global(2. * x_ref)
 
     def get_elements(self):
-        return [x for x in [self.element_left, self.element_right,] if x is not None]
+        return [elem for elem in [self.element_left, self.element_right,] if elem is not None]
 
     def is_boundary_patch(self):
         return len(self.get_elements()) == 1

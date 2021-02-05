@@ -38,37 +38,73 @@ class SpaceTimeTent:
     def get_space_patch(self):
         return self.bottom_space_time_vertex.space_vertex.patch
 
-    def _get_front(self, central_space_time_vertex):
-        def front(x):
-            # Input x is in global coordinates of the underlying space patch!
-            patch = self.get_space_patch()
-            assert x in patch
-            if patch.element_left is not None and x in patch.element_left:
-                assert patch.element_left.vertex_right == central_space_time_vertex.space_vertex
-                assert patch.element_left.vertex_left == self.get_left_space_time_vertex().space_vertex
-                xl = patch.element_left.vertex_left.coordinate
-                xr = patch.element_left.vertex_right.coordinate
-                yl = self.get_left_space_time_vertex().time
-                yr = central_space_time_vertex.time
-            else:
-                assert patch.element_right is not None and x in patch.element_right
-                assert patch.element_right.vertex_left == central_space_time_vertex.space_vertex
-                assert patch.element_right.vertex_right == self.get_right_space_time_vertex().space_vertex
-                xl = patch.element_right.vertex_left.coordinate
-                xr = patch.element_right.vertex_right.coordinate
-                yl = central_space_time_vertex.time
-                yr = self.get_right_space_time_vertex().time
+    def _get_front_value(self, x, central_space_time_vertex):
+        # Input x is in global coordinates of the underlying space patch!
+        patch = self.get_space_patch()
+        assert x in patch
+        if patch.element_left is not None and x in patch.element_left:
+            assert patch.element_left.vertex_right == central_space_time_vertex.space_vertex
+            assert patch.element_left.vertex_left == self.get_left_space_time_vertex().space_vertex
+            xl = patch.element_left.vertex_left.coordinate
+            xr = patch.element_left.vertex_right.coordinate
+            yl = self.get_left_space_time_vertex().time
+            yr = central_space_time_vertex.time
+        else:
+            assert patch.element_right is not None and x in patch.element_right
+            assert patch.element_right.vertex_left == central_space_time_vertex.space_vertex
+            assert patch.element_right.vertex_right == self.get_right_space_time_vertex().space_vertex
+            xl = patch.element_right.vertex_left.coordinate
+            xr = patch.element_right.vertex_right.coordinate
+            yl = central_space_time_vertex.time
+            yr = self.get_right_space_time_vertex().time
 
-            return yl + (yr - yl) * (x - xl) / (xr - xl)
+        return yl + (yr - yl) * (x - xl) / (xr - xl)
 
-        return front
+    def _get_front_derivative(self, x, central_space_time_vertex):
+        # Input x is in global coordinates of the underlying space patch!
+        patch = self.get_space_patch()
+        assert x in patch
+        if patch.element_left is not None and x in patch.element_left:
+            assert patch.element_left.vertex_right == central_space_time_vertex.space_vertex
+            assert patch.element_left.vertex_left == self.get_left_space_time_vertex().space_vertex
+            xl = patch.element_left.vertex_left.coordinate
+            xr = patch.element_left.vertex_right.coordinate
+            yl = self.get_left_space_time_vertex().time
+            yr = central_space_time_vertex.time
+        else:
+            assert patch.element_right is not None and x in patch.element_right
+            assert patch.element_right.vertex_left == central_space_time_vertex.space_vertex
+            assert patch.element_right.vertex_right == self.get_right_space_time_vertex().space_vertex
+            xl = patch.element_right.vertex_left.coordinate
+            xr = patch.element_right.vertex_right.coordinate
+            yl = central_space_time_vertex.time
+            yr = self.get_right_space_time_vertex().time
 
-    def get_bottom_front(self):
-        return self._get_front(self.bottom_space_time_vertex)
+        return (yr - yl) / (xr - xl)
 
-    def get_top_front(self):
-        return self._get_front(self.top_space_time_vertex)
+    def get_bottom_front_value(self, x):
+        return self._get_front_value(x, self.bottom_space_time_vertex)
 
+    def get_bottom_front_derivative(self, x):
+        return self._get_front_derivative(x, self.bottom_space_time_vertex)
+
+    def get_top_front_value(self, x):
+        return self._get_front_value(x, self.top_space_time_vertex)
+
+    def get_top_front_derivative(self, x):
+        return self._get_front_derivative(x, self.top_space_time_vertex)
+
+    def get_space_transformation(self, x_ref):
+        return self.get_space_patch().to_global(x_ref)
+
+    def get_space_transformation_derivative(self, x_ref):
+        return self.get_space_patch().to_global_derivative(x_ref)
+
+    def get_time_transformation(self, x_ref, t_ref):
+        return (1. - t_ref) * self.get_bottom_front_value(self.get_space_transformation(x_ref)) + t_ref * self.get_top_front_value(self.get_space_transformation(x_ref))
+
+    def get_time_transformation_derivative_space(self, x_ref, t_ref):
+        return ((1. - t_ref) * self.get_bottom_front_derivative(self.get_space_transformation(x_ref)) + t_ref * self.get_top_front_derivative(self.get_space_transformation(x_ref))) * self.get_space_transformation_derivative(x_ref)
 
 class AdvancingFront:
     def __init__(self, space_grid, t_max, characteristic_speed):
