@@ -23,6 +23,12 @@ class SpaceTimeTent:
         self.space_time_vertices = space_time_vertices
         assert len(self.space_time_vertices) <= 4
 
+    def is_initial_boundary(self):
+        if sum(vertex.time == 0.0 for vertex in self.space_time_vertices) >= 2:
+            return True
+        else:
+            return False
+
     def get_left_space_time_vertex(self):
         for vertex in self.space_time_vertices:
             if vertex.space_vertex.coordinate < self.bottom_space_time_vertex.space_vertex.coordinate:
@@ -124,7 +130,7 @@ class AdvancingFront:
         return None
 
 
-class SpaceTimeMesh:
+class SpaceTimeGrid:
     def __init__(self, space_grid, t_max, characteristic_speed, gamma=0.5):
         self.space_grid = space_grid
         self.t_max = t_max

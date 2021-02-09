@@ -1,6 +1,6 @@
 from tent_pitching import perform_tent_pitching
 from tent_pitching.grids import Vertex, Element, Grid
-from tent_pitching.visualization import plot_1d_space_time_mesh
+from tent_pitching.visualization import plot_1d_space_time_grid
 
 
 vertex1 = Vertex(0., label="Vertex 1")
@@ -15,16 +15,16 @@ grid = Grid(elements)
 T_MAX = 1.
 characteristic_speed = lambda x: 1.0
 
-space_time_mesh = perform_tent_pitching(grid, T_MAX, characteristic_speed, n_max=1000, log=True)
+space_time_grid = perform_tent_pitching(grid, T_MAX, characteristic_speed, n_max=1000, log=True)
 
 for vertex in grid.get_vertices():
     print(f'{vertex} is boundary: {vertex.is_boundary_vertex()}')
 
 i = 1
 x_ref = .75
-print(space_time_mesh.tents[i].get_bottom_front_value(space_time_mesh.tents[i].get_space_patch().to_global(x_ref)))
-print(space_time_mesh.tents[i].get_bottom_front_derivative(space_time_mesh.tents[i].get_space_patch().to_global(x_ref)))
-print(space_time_mesh.tents[i].get_top_front_value(space_time_mesh.tents[i].get_space_patch().to_global(x_ref)))
-print(space_time_mesh.tents[i].get_top_front_derivative(space_time_mesh.tents[i].get_space_patch().to_global(x_ref)))
+print(space_time_grid.tents[i].get_bottom_front_value(space_time_grid.tents[i].get_space_patch().to_global(x_ref)))
+print(space_time_grid.tents[i].get_bottom_front_derivative(space_time_grid.tents[i].get_space_patch().to_global(x_ref)))
+print(space_time_grid.tents[i].get_top_front_value(space_time_grid.tents[i].get_space_patch().to_global(x_ref)))
+print(space_time_grid.tents[i].get_top_front_derivative(space_time_grid.tents[i].get_space_patch().to_global(x_ref)))
 
-plot_1d_space_time_mesh(space_time_mesh)
+plot_1d_space_time_grid(space_time_grid)
