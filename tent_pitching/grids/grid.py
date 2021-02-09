@@ -1,96 +1,90 @@
-import numpy as np
+from tent_pitching.grids import Patch
 
 
 class Vertex:
-    def __init__(self, coordinates, label=""):
-        self.coordinates = coordinates
-        self.dim = len(self.coordinates)
+    def __init__(self, coordinate, label=""):
+        self.coordinate = coordinate
         self.label = label
 
         self.patch_elements = []
-        self.incident_edges = []
+        self.patch = None
 
     def __str__(self):
-        return self.label + f" at {self.coordinates}"
+        return self.label + f" at {self.coordinate}"
 
     def get_adjacent_vertices(self):
         adjacent_vertices = []
-        for edge in self.incident_edges:
-            adjacent_vertices.extend(edge.get_vertices())
+        for element in self.patch_elements:
+            adjacent_vertices.extend(element.get_vertices())
 
         if self in adjacent_vertices:
             adjacent_vertices.remove(self)
 
         return list(filter((self).__ne__, adjacent_vertices))
 
+    def init_patch(self):
+        assert len(self.patch_elements) <= 2
+        self.patch = Patch(self)
 
-class Edge:
-    def __init__(self, vertex0, vertex1, label=""):
-        assert vertex0.dim == vertex1.dim
-        self.vertex0 = vertex0
-        self.vertex1 = vertex1
-        self.label = label
+    def get_left_element(self):
+        for element in self.patch_elements:
+            if element.vertex_left.coordinate < self.coordinate:
+                return element
+        assert len(self.patch_elements) == 1
+        return None
 
-        self.length = np.linalg.norm(vertex0.coordinates - vertex1.coordinates)
+    def get_right_element(self):
+        for element in self.patch_elements:
+            if element.vertex_right.coordinate > self.coordinate:
+                return element
+        assert len(self.patch_elements) == 1
+        return None
 
-        self.vertex0.incident_edges.append(self)
-        self.vertex1.incident_edges.append(self)
-
-        self.incident_elements = []
-
-    def __str__(self):
-        return self.label + f" between ({self.vertex0}) and ({self.vertex1}); length: {self.length}"
-
-    def get_vertices(self):
-        return [self.vertex0, self.vertex1]
-
-    def get_maximum_speed_on_incident_elements(self, characteristic_speed):
-        speed = 0.
-        for element in self.incident_elements:
-            speed = np.max([speed, element.get_maximum_speed(characteristic_speed)])
-
-        return speed
+    def is_boundary_vertex(self):
+        return (self.get_right_element() is None or self.get_left_element() is None)
 
 
 class Element:
-    def __init__(self, edges, label=""):
-        self.edges = edges
-        for edge in self.edges:
-            edge.incident_elements.append(self)
+    def __init__(self, vertex_left, vertex_right, label=""):
+        assert vertex_left.coordinate < vertex_right.coordinate
+        self.vertex_left = vertex_left
+        self.vertex_right = vertex_right
         self.label = label
 
-        for vertex in self.get_vertices():
-            vertex.patch_elements.append(self)
+        self.length = self.vertex_right.coordinate - self.vertex_left.coordinate
 
-        assert len(self.get_vertices()) > 0
-        assert len(set([vertex.dim for vertex in self.get_vertices()])) == 1
-
-        self.dim = self.get_vertices()[0].dim
+        self.vertex_left.patch_elements.append(self)
+        self.vertex_right.patch_elements.append(self)
 
     def __str__(self):
-        return self.label + f" with {len(self.edges)} edges"
+        return self.label
+
+    def __contains__(self, x):
+        return self.vertex_left.coordinate <= x <= self.vertex_right.coordinate
 
     def get_vertices(self):
-        return list(set([vertex for edge in self.edges for vertex in edge.get_vertices()]))
-
-    def get_edges(self):
-        return self.edges
+        return [self.vertex_left, self.vertex_right,]
 
     def get_maximum_speed(self, characteristic_speed):
-        return characteristic_speed(self.get_vertices()[0].coordinates) # Do something more elaborate here!
+        return characteristic_speed(self.get_vertices()[0].coordinate) # Do something more elaborate here!
+
+    def to_local(self, x):
+        assert x in self
+        return (x - self.vertex_left.coordinate) / self.length
+
+    def to_global(self, x):
+        return self.vertex_left.coordinate + x * self.length
 
 
 class Grid:
     def __init__(self, elements):
         assert len(elements) > 0
-        assert len(set([element.dim for element in elements])) == 1
         self.elements = elements
-        self.dim = self.elements[0].dim
 
         self.shape_regularity_constant = 1. # compute a reasonable value here!
 
+        for vertex in self.get_vertices():
+            vertex.init_patch()
+
     def get_vertices(self):
         return list(set([vertex for element in self.elements for vertex in element.get_vertices()]))
-
-    def get_edges(self):
-        return list(set([edge for element in self.elements for edge in element.get_edges()]))
