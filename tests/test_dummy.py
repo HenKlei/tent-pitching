@@ -26,5 +26,3 @@ def test_1d():
     print(space_time_mesh.tents[i].get_bottom_front_derivative(space_time_mesh.tents[i].get_space_patch().to_global(x_ref)))
     print(space_time_mesh.tents[i].get_top_front_value(space_time_mesh.tents[i].get_space_patch().to_global(x_ref)))
     print(space_time_mesh.tents[i].get_top_front_derivative(space_time_mesh.tents[i].get_space_patch().to_global(x_ref)))
-
-    plot_1d_space_time_mesh(space_time_mesh)
