@@ -34,6 +34,7 @@ class DiscontinuousGalerkin:
             function_value = function.get_values()
 
             for i in range(len(function_value)):
+                x_ref = tent.get_space_patch().to_local(function.element.to_global(self.local_space_grid_size * (0.5 + i)))
                 x_ref_left = tent.get_space_patch().to_local(function.element.to_global(self.local_space_grid_size * i))
                 x_ref_right = tent.get_space_patch().to_local(function.element.to_global(self.local_space_grid_size * (1. + i)))
 
@@ -67,14 +68,11 @@ class DiscontinuousGalerkin:
                         function_value_central = function_value[i]
                         function_value_right = function_value[i+1]
 
-                lambda_ = .5
+                phi = tent.get_space_transformation(x_ref)
                 phi_1 = tent.get_space_transformation(x_ref_left)
                 phi_2 = tent.get_space_transformation(x_ref_right)
 
-                def LaxFriedrichsFlux(u_1, u_2, n):
-                    return (self.flux(u_1) + self.flux(u_2)) / 2. * n + lambda_ * (u_1 - u_2)
-
-                val += (LaxFriedrichsFlux(function_value_central, function_value_left, -1.) + LaxFriedrichsFlux(function_value_central, function_value_right, 1.)) * (tent.get_top_front_value(phi_2) - tent.get_bottom_front_value(phi_2))
+                val += (self.NumericalFlux(function_value_central, function_value_left, -1.) + self.NumericalFlux(function_value_central, function_value_right, 1.)) * (tent.get_top_front_value(phi) - tent.get_bottom_front_value(phi))
 
                 vector[l] = val
                 l += 1
