@@ -75,6 +75,9 @@ class Element:
     def to_global(self, x):
         return self.vertex_left.coordinate + x * self.length
 
+    def to_global_dx(self, x):
+        return self.length
+
 
 class Grid:
     def __init__(self, elements):
@@ -87,4 +90,7 @@ class Grid:
             vertex.init_patch()
 
     def get_vertices(self):
-        return list(set([vertex for element in self.elements for vertex in element.get_vertices()]))
+        seen = set()
+        seen_add = seen.add
+        return [vertex for element in self.elements for vertex in element.get_vertices() if not (vertex in seen or seen_add(vertex))]
+        #return list(set([vertex for element in self.elements for vertex in element.get_vertices()]))

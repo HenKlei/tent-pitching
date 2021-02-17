@@ -1,2 +1,4 @@
-from .space_function import SpaceFunction
-from .space_time_function import SpaceTimeFunction
+from .local_functions import LocalSpaceTimeFunction
+from .local_functions import DGFunction
+
+from .global_functions import SpaceFunction, SpaceTimeFunction
