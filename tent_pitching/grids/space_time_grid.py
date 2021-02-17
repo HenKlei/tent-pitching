@@ -9,25 +9,59 @@ class SpaceTimeVertex:
 
         self.coordinates = [self.space_vertex.coordinate, self.time,]
 
+        self.tent_below = None
+
     def __str__(self):
         return self.space_vertex.__str__() + f"; time: {self.time}"
 
 
 class SpaceTimeTent:
-    def __init__(self, bottom_space_time_vertex, top_space_time_vertex, space_time_vertices=None):
+    def __init__(self, bottom_space_time_vertex, top_space_time_vertex, space_time_vertices=None, number=None):
         self.bottom_space_time_vertex = bottom_space_time_vertex
         self.top_space_time_vertex = top_space_time_vertex
         assert self.bottom_space_time_vertex.space_vertex == self.top_space_time_vertex.space_vertex
         self.height = top_space_time_vertex.time - bottom_space_time_vertex.time
 
+        self.neighboring_tents_above = []
+        self.neighboring_tents_below = []
+
         self.space_time_vertices = space_time_vertices
         assert len(self.space_time_vertices) <= 4
 
-    def is_initial_boundary(self):
+        self.number = number
+
+    def __str__(self):
+        if self.number is not None:
+             return f"Tent number {self.number} pitched above of {self.bottom_space_time_vertex.space_vertex}"
+        else:
+             return "Tent without number pitched above of {self.bottom_space_time_vertex.space_vertex}"
+
+    def has_initial_boundary(self):
         if sum(vertex.time == 0.0 for vertex in self.space_time_vertices) >= 2:
+            assert self.bottom_space_time_vertex.time == 0.0
+            assert len(self.get_initial_boundary_elements()) > 0
             return True
         else:
+            assert len(self.get_initial_boundary_elements()) == 0
             return False
+
+    def get_initial_boundary_elements(self):
+        elements = []
+        try:
+            left_vertex = self.get_left_space_time_vertex()
+            if left_vertex.time == 0.0:
+                elements.append(self.bottom_space_time_vertex.space_vertex.get_left_element())
+        except:
+            pass
+
+        try:
+            right_vertex = self.get_right_space_time_vertex()
+            if right_vertex.time == 0.0:
+                elements.append(self.bottom_space_time_vertex.space_vertex.get_right_element())
+        except:
+            pass
+
+        return elements
 
     def get_left_space_time_vertex(self):
         for vertex in self.space_time_vertices:
@@ -101,16 +135,25 @@ class SpaceTimeTent:
         return self._get_front_derivative(x, self.top_space_time_vertex)
 
     def get_space_transformation(self, x_ref):
+        # phi_1
         return self.get_space_patch().to_global(x_ref)
 
-    def get_space_transformation_derivative(self, x_ref):
-        return self.get_space_patch().to_global_derivative(x_ref)
+    def get_space_transformation_dx(self, x_ref):
+        # phi_1_derivative
+        return self.get_space_patch().to_global_dx(x_ref)
 
     def get_time_transformation(self, x_ref, t_ref):
+        # phi_2
         return (1. - t_ref) * self.get_bottom_front_value(self.get_space_transformation(x_ref)) + t_ref * self.get_top_front_value(self.get_space_transformation(x_ref))
 
-    def get_time_transformation_derivative_space(self, x_ref, t_ref):
-        return ((1. - t_ref) * self.get_bottom_front_derivative(self.get_space_transformation(x_ref)) + t_ref * self.get_top_front_derivative(self.get_space_transformation(x_ref))) * self.get_space_transformation_derivative(x_ref)
+    def get_time_transformation_dx(self, x_ref, t_ref):
+        # phi_2_dx
+        return ((1. - t_ref) * self.get_bottom_front_derivative(self.get_space_transformation(x_ref)) + t_ref * self.get_top_front_derivative(self.get_space_transformation(x_ref))) * self.get_space_transformation_dx(x_ref)
+
+    def get_time_transformation_dt(self, x_ref, t_ref):
+        # phi_2_dt
+        return -self.get_bottom_front_value(self.get_space_transformation(x_ref)) + self.get_top_front_value(self.get_space_transformation(x_ref))
+
 
 class AdvancingFront:
     def __init__(self, space_grid, t_max, characteristic_speed):
@@ -119,14 +162,15 @@ class AdvancingFront:
         self.characteristic_speed = characteristic_speed
 
         self.space_time_vertices = [SpaceTimeVertex(vertex, 0.) for vertex in space_grid.get_vertices()]
-        self.potential_pitch_locations = set(list(self.space_time_vertices))
+        self.potential_pitch_locations = list(self.space_time_vertices)#set(list(self.space_time_vertices))
 
         for vertex in self.space_time_vertices:
             vertex.potential_tent_height = np.min([element.length * self.space_grid.shape_regularity_constant / element.get_maximum_speed(characteristic_speed) for element in vertex.space_vertex.patch.get_elements()])
 
     def get_feasible_vertex(self):
         if len(self.potential_pitch_locations) > 0:
-            return next(iter(self.potential_pitch_locations))
+            return self.potential_pitch_locations[0]
+#            return next(iter(self.potential_pitch_locations))
         return None
 
 
@@ -154,8 +198,14 @@ class SpaceTimeGrid:
         for vertex in self.advancing_front.space_time_vertices:
             if vertex.space_vertex in space_time_vertex.space_vertex.get_adjacent_vertices():
                 space_time_vertices_of_tent.append(vertex)
-        tent = SpaceTimeTent(space_time_vertex, new_space_time_vertex, space_time_vertices=space_time_vertices_of_tent)
+        tent = SpaceTimeTent(space_time_vertex, new_space_time_vertex, space_time_vertices=space_time_vertices_of_tent, number=len(self.tents))
+        for vertex in self.advancing_front.space_time_vertices:
+              if vertex.space_vertex in space_time_vertex.space_vertex.get_adjacent_vertices():
+                  if vertex.tent_below and all(neighboring_tent.bottom_space_time_vertex.space_vertex != space_time_vertex.space_vertex for neighboring_tent in vertex.tent_below.neighboring_tents_above):
+                      vertex.tent_below.neighboring_tents_above.append(tent)
+                      tent.neighboring_tents_below.append(vertex.tent_below)
         self.tents.append(tent)
+        new_space_time_vertex.tent_below = tent
 
         # update potential tent heights
         for vertex in self.advancing_front.space_time_vertices:
@@ -172,7 +222,8 @@ class SpaceTimeGrid:
 
                 tent_height_on_flat_front = np.min([element.length * self.space_grid.shape_regularity_constant / element.get_maximum_speed(self.characteristic_speed) for element in vertex.space_vertex.patch.get_elements()])
                 if vertex.potential_tent_height >= np.min([self.gamma * tent_height_on_flat_front, self.t_max - vertex.time]) and vertex.potential_tent_height > 0.:
-                    self.advancing_front.potential_pitch_locations.update([vertex,])
+                    if not vertex in self.advancing_front.potential_pitch_locations:
+                        self.advancing_front.potential_pitch_locations.append(vertex)#.update([vertex,])
                 elif vertex in self.advancing_front.potential_pitch_locations:
                     self.advancing_front.potential_pitch_locations.remove(vertex)
 

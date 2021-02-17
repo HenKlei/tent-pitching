@@ -1,8 +1,10 @@
+import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib import cm
 from matplotlib.lines import Line2D
 
 from tent_pitching.grids import SpaceTimeGrid
-from tent_pitching.functions import SpaceFunction
+from tent_pitching.functions import SpaceFunction, SpaceTimeFunction
 
 
 def plot_1d_space_time_grid(space_time_grid):
@@ -27,16 +29,43 @@ def plot_1d_space_time_grid(space_time_grid):
     ax.set_ylabel('t')
     ax.set_aspect('equal')
 
-    plt.show()
+    return fig
 
 
 def plot_space_function(u):
     assert isinstance(u, SpaceFunction)
+
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1)
-    ax.plot(*u.get_function_global())
+    for values in u.get_function_values():
+        ax.plot(*values)
     ax.set_xlabel('x')
     ax.set_ylabel('u(x)')
     #ax.set_aspect('equal')
 
-    plt.show()
+    return fig
+
+
+def plot_space_time_function(u):
+    assert isinstance(u, SpaceTimeFunction)
+
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1)
+
+    function_values = u.get_function_values()
+
+    max_val = np.max(np.max(np.array(function_values, dtype=list)))
+    min_val = np.min(np.min(np.array(function_values, dtype=list)))
+
+    for x, y, z in zip(*function_values):
+        sc = ax.scatter(x, y, c=z, vmin=min_val, vmax=max_val)
+
+    fig.colorbar(sc)
+
+    ax.set(xlim=(0, 1), ylim=(0, 1))
+    ax.set_xlabel('x')
+    ax.set_ylabel('t')
+
+    ax.set_aspect('equal')
+
+    return fig

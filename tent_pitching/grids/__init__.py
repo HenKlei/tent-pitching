@@ -1,4 +1,4 @@
-from .patch_elements import Patch
+from .patches import Patch
 
 from .grid import Vertex, Element, Grid
 
