@@ -188,6 +188,7 @@ class SpaceTimeGrid:
 
     def pitch_tent(self, space_time_vertex):
         assert space_time_vertex in self.advancing_front.potential_pitch_locations
+        # update advancing front
         self.advancing_front.space_time_vertices.remove(space_time_vertex)
         self.advancing_front.potential_pitch_locations.remove(space_time_vertex)
         new_space_time_vertex = SpaceTimeVertex(space_time_vertex.space_vertex, space_time_vertex.time + space_time_vertex.potential_tent_height)
@@ -199,11 +200,17 @@ class SpaceTimeGrid:
             if vertex.space_vertex in space_time_vertex.space_vertex.get_adjacent_vertices():
                 space_time_vertices_of_tent.append(vertex)
         tent = SpaceTimeTent(space_time_vertex, new_space_time_vertex, space_time_vertices=space_time_vertices_of_tent, number=len(self.tents))
-        for vertex in self.advancing_front.space_time_vertices:
-              if vertex.space_vertex in space_time_vertex.space_vertex.get_adjacent_vertices():
-                  if vertex.tent_below and all(neighboring_tent.bottom_space_time_vertex.space_vertex != space_time_vertex.space_vertex for neighboring_tent in vertex.tent_below.neighboring_tents_above):
-                      vertex.tent_below.neighboring_tents_above.append(tent)
-                      tent.neighboring_tents_below.append(vertex.tent_below)
+        # set neighboring tents properly
+        for vertex in space_time_vertices_of_tent:
+            if vertex.tent_below and len(set(vertex.tent_below.space_time_vertices).intersection(space_time_vertices_of_tent)) == 2:
+                # find element that corresponds to the intersection of the tents
+                element = None
+                for elem in tent.get_space_patch().get_elements():
+                    if set(elem.get_vertices()) == set(st_vertex.space_vertex for st_vertex in set(vertex.tent_below.space_time_vertices).intersection(space_time_vertices_of_tent)):
+                        element = elem
+                assert element is not None
+                vertex.tent_below.neighboring_tents_above.append((tent, element))
+                tent.neighboring_tents_below.append((vertex.tent_below, element))
         self.tents.append(tent)
         new_space_time_vertex.tent_below = tent
 
