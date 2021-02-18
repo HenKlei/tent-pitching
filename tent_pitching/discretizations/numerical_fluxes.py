@@ -1,5 +1,3 @@
-
-
 class LaxFriedrichsFlux:
     def __init__(self, flux, lambda_):
         self.flux = flux

@@ -1,6 +1,3 @@
-
-
-
 class Patch:
     def __init__(self, vertex):
         self.central_vertex = vertex

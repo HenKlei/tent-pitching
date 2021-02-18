@@ -41,7 +41,7 @@ class Vertex:
         return None
 
     def is_boundary_vertex(self):
-        return (self.get_right_element() is None or self.get_left_element() is None)
+        return self.get_right_element() is None or self.get_left_element() is None
 
 
 class Element:
@@ -66,7 +66,8 @@ class Element:
         return [self.vertex_left, self.vertex_right,]
 
     def get_maximum_speed(self, characteristic_speed):
-        return characteristic_speed(self.get_vertices()[0].coordinate) # Do something more elaborate here!
+        # Do something more elaborate here!
+        return characteristic_speed(self.get_vertices()[0].coordinate)
 
     def to_local(self, x):
         assert x in self
@@ -92,5 +93,7 @@ class Grid:
     def get_vertices(self):
         seen = set()
         seen_add = seen.add
-        return [vertex for element in self.elements for vertex in element.get_vertices() if not (vertex in seen or seen_add(vertex))]
-        #return list(set([vertex for element in self.elements for vertex in element.get_vertices()]))
+        return [vertex for element in self.elements
+                for vertex in element.get_vertices() if not (vertex in seen or seen_add(vertex))]
+        #return list(set([vertex for element in self.elements
+        #                  for vertex in element.get_vertices()]))
