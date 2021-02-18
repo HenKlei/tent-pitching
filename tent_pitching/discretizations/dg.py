@@ -40,38 +40,32 @@ class DiscontinuousGalerkin:
 
                 val = 0.
 
+                function_value_central = function_value[i]
+
                 if l == 0:
                     # Boundary values
                     val -= self.eta_D * 1. * u_D_left
 
                     function_value_left = function_value[i]
-                    function_value_central = function_value[i]
                     function_value_right = function_value[i+1]
                 elif l == len(vector) - 1:
                     # Boundary values
                     val -= self.eta_D * 1. * u_D_right
 
                     function_value_left = function_value[i-1]
-                    function_value_central = function_value[i]
                     function_value_right = function_value[i]
                 else:
                     if i == 0:
                         function_value_left = local_solution[j-1].get_values()[-1] # Does this work in every case???? -> Order of local_solutions????
-                        function_value_central = function_value[i]
                         function_value_right = function_value[i+1]
                     elif i == int(1. / self.local_space_grid_size) - 1:
                         function_value_right = local_solution[j+1].get_values()[0] # Does this work in every case???? -> Order of local_solutions????
                         function_value_left = function_value[i-1]
-                        function_value_central = function_value[i]
                     else:
                         function_value_left = function_value[i-1]
-                        function_value_central = function_value[i]
                         function_value_right = function_value[i+1]
 
                 phi = tent.get_space_transformation(x_ref)
-                phi_1 = tent.get_space_transformation(x_ref_left)
-                phi_2 = tent.get_space_transformation(x_ref_right)
-
                 val += (self.NumericalFlux(function_value_central, function_value_left, -1.) + self.NumericalFlux(function_value_central, function_value_right, 1.)) * (tent.get_top_front_value(phi) - tent.get_bottom_front_value(phi))
 
                 vector[l] = val
