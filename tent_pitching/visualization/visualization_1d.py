@@ -7,7 +7,7 @@ from tent_pitching.grids import SpaceTimeGrid
 from tent_pitching.functions import SpaceFunction, SpaceTimeFunction
 
 
-def plot_1d_space_time_grid(space_time_grid):
+def plot_1d_space_time_grid(space_time_grid, title=''):
     assert isinstance(space_time_grid, SpaceTimeGrid)
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1)
@@ -28,25 +28,29 @@ def plot_1d_space_time_grid(space_time_grid):
     ax.set_xlabel('x')
     ax.set_ylabel('t')
     ax.set_aspect('equal')
+    ax.set_title(title)
 
     return fig
 
 
-def plot_space_function(u):
+def plot_space_function(u, title=''):
     assert isinstance(u, SpaceFunction)
 
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1)
+
     for values in u.get_function_values():
         ax.plot(*values)
+
     ax.set_xlabel('x')
     ax.set_ylabel('u(x)')
-    #ax.set_aspect('equal')
+    ax.set_aspect('equal')
+    ax.set_title(title)
 
     return fig
 
 
-def plot_space_time_function(u):
+def plot_space_time_function(u, title=''):
     assert isinstance(u, SpaceTimeFunction)
 
     fig = plt.figure()
@@ -62,10 +66,9 @@ def plot_space_time_function(u):
 
     fig.colorbar(sc)
 
-    ax.set(xlim=(0, 1), ylim=(0, 1))
     ax.set_xlabel('x')
     ax.set_ylabel('t')
-
     ax.set_aspect('equal')
+    ax.set_title(title)
 
     return fig
