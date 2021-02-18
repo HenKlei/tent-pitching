@@ -97,7 +97,8 @@ class Grid:
         seen_add = seen.add
         return [vertex for element in self.elements
                 for vertex in element.get_vertices() if not (vertex in seen or seen_add(vertex))]
-        #return list(set([vertex for element in self.elements
+        # If we change back to sets, use this instead:
+        # return list(set([vertex for element in self.elements
         #                  for vertex in element.get_vertices()]))
 
 
@@ -109,13 +110,11 @@ def create_uniform_grid(global_space_grid_size, left=0., right=1.):
     for i in range(num_vertices):
         vertices.append(Vertex(left + i * diff, label=f"Vertex {i}"))
 
-
     def pairwise(iterable):
         "s -> (s0,s1), (s1,s2), (s2, s3), ..."
         first, second = itertools.tee(iterable)
         next(second, None)
         return zip(first, second)
-
 
     elements = []
     for i, tmp in enumerate(pairwise(vertices)):

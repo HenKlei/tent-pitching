@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from tent_pitching import perform_tent_pitching
-from tent_pitching.grids import Vertex, Element, Grid
+from tent_pitching.grids import Vertex, Element, Grid, create_uniform_grid
 from tent_pitching.visualization import (plot_1d_space_time_grid, plot_space_function,
                                          plot_space_time_function)
 from tent_pitching.operators import GridOperator
@@ -19,9 +19,14 @@ element1 = Element(vertex1, vertex2, label="Element 1")
 element2 = Element(vertex2, vertex3, label="Element 2")
 elements = [element0, element1, element2]
 grid = Grid(elements)
+grid = create_uniform_grid(0.25)
 T_MAX = 1.
-EPS = 1e-0
-characteristic_speed = lambda x: 1.0 + EPS
+EPS = 1e-6
+
+
+def characteristic_speed(x):
+    return 1.0 + EPS
+
 
 space_time_grid = perform_tent_pitching(grid, T_MAX, characteristic_speed, n_max=1000, log=True)
 
@@ -34,20 +39,31 @@ grid_operator = GridOperator(space_time_grid, DGFunction,
                              local_space_grid_size=LOCAL_SPACE_GRID_SIZE,
                              local_time_grid_size=LOCAL_TIME_GRID_SIZE)
 
-def u_0_function(x):
+
+def u_0_function(x, jump=False):
+    if jump:
+        return 1. * (x <= 0.25)
     return 0.5 * (1.0 + np.cos(2.0 * np.pi * x)) * (0.0 <= x <= 0.5) + 0. * (x > 0.5)
+
+
 u_0 = grid_operator.interpolate(u_0_function)
 
 plot_space_function(u_0)
 
+
 def burgers_flux(u):
     return 0.5 * u**2
+
 
 def burgers_flux_derivative(u):
     return u
 
+
 def inverse_transformation(u, phi_1, phi_1_prime, phi_2, phi_2_dt, phi_2_dx):
-    return 2 * u / (phi_1_prime + np.sqrt(phi_1_prime**2 - 2 * u * phi_2_dx))
+    return u
+    # Should actually be:
+    # return 2 * u / (phi_1_prime + np.sqrt(phi_1_prime**2 - 2 * u * phi_2_dx))
+
 
 ETA_DIRICHLET = 1e-4
 

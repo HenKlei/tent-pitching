@@ -50,7 +50,7 @@ class Patch:
         return self.element_left.to_global(2. * x_ref)
 
     def get_elements(self):
-        return [elem for elem in [self.element_left, self.element_right,] if elem is not None]
+        return [elem for elem in [self.element_left, self.element_right, ] if elem is not None]
 
     def is_boundary_patch(self):
         return len(self.get_elements()) == 1
