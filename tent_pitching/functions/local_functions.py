@@ -20,13 +20,13 @@ class DGFunction:
         self.function = values
 
     def get_function_values(self):
-        x = []
-        y = []
+        x_vals = []
+        y_vals = []
         for i in range(len(self.function)):
             local_coordinate = self.local_space_grid_size / 2. + i * self.local_space_grid_size
-            x.append(self.element.to_global(local_coordinate))
-            y.append(self.function[i])
-        return x, y
+            x_vals.append(self.element.to_global(local_coordinate))
+            y_vals.append(self.function[i])
+        return x_vals, y_vals
 
     def __add__(self, other):
         assert isinstance(other, self.__class__)
@@ -66,7 +66,8 @@ class LocalSpaceTimeFunction:
         assert len(function_list) == len(self.function)
 
         for function in function_list:
-            self.function[self.tent.get_space_patch().get_elements().index(function.element)][time] = function
+            self.function[self.tent.get_space_patch()
+                          .get_elements().index(function.element)][time] = function
 
     def set_initial_value(self, function_list):
         self.set_value(0, function_list)
@@ -85,20 +86,20 @@ class LocalSpaceTimeFunction:
         return self.get_value(0)
 
     def get_function_values(self):
-        x = []
-        t = []
-        y = []
+        x_vals = []
+        t_vals = []
+        y_vals = []
 
         for element_functions in self.function:
-            for n, func in enumerate(element_functions):
-                t_ref = n * self.local_time_grid_size
+            for time, func in enumerate(element_functions):
+                t_ref = time * self.local_time_grid_size
                 tmp = func.get_function_values()
-                x.append(tmp[0])
+                x_vals.append(tmp[0])
                 tmp2 = []
                 for x_val in tmp[0]:
                     x_ref = self.tent.get_space_patch().to_local(x_val)
                     tmp2.append(self.tent.get_time_transformation(x_ref, t_ref))
-                t.append(tmp2)
-                y.append(tmp[1])
+                t_vals.append(tmp2)
+                y_vals.append(tmp[1])
 
-        return x, t, y
+        return x_vals, t_vals, y_vals

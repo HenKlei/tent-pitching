@@ -10,7 +10,9 @@ class SpaceFunction:
     def __init__(self, space_grid, LocalSpaceFunctionType, u=None, local_space_grid_size=1e-1):
         self.space_grid = space_grid
 
-        self.function = [LocalSpaceFunctionType(element, local_space_grid_size=local_space_grid_size) for element in space_grid.elements]
+        self.function = [LocalSpaceFunctionType(element,
+                                                local_space_grid_size=local_space_grid_size)
+                         for element in space_grid.elements]
 
         if u is not None:
             self.interpolate(u)
@@ -24,7 +26,8 @@ class SpaceFunction:
         return self.function[self.space_grid.elements.index(element)]
 
     def get_function_on_space_patch(self, patch):
-        return [self.function[self.space_grid.elements.index(element)] for element in patch.get_elements()]
+        return [self.function[self.space_grid.elements.index(element)]
+                for element in patch.get_elements()]
 
     def get_function_values(self):
         return [self.function[i].get_function_values() for i in range(len(self.function))]
@@ -34,10 +37,14 @@ class SpaceTimeFunction:
     """
     Function that is defined for each tent in the space time grid on its reference element.
     """
-    def __init__(self, space_time_grid, LocalSpaceFunctionType, local_space_grid_size=1e-1, local_time_grid_size=1e-1):
+    def __init__(self, space_time_grid, LocalSpaceFunctionType,
+                 local_space_grid_size=1e-1, local_time_grid_size=1e-1):
         self.space_time_grid = space_time_grid
 
-        self.function = [LocalSpaceTimeFunction(tent, LocalSpaceFunctionType, local_space_grid_size=local_space_grid_size, local_time_grid_size=local_time_grid_size) for tent in space_time_grid.tents]
+        self.function = [LocalSpaceTimeFunction(tent, LocalSpaceFunctionType,
+                                                local_space_grid_size=local_space_grid_size,
+                                                local_time_grid_size=local_time_grid_size)
+                         for tent in space_time_grid.tents]
 
     def set_global_initial_value(self, u_0):
         assert isinstance(u_0, SpaceFunction)
@@ -58,8 +65,10 @@ class SpaceTimeFunction:
         print("|   |   Setting initial values on neighboring tents...")
         for neighboring_tent, element in tent.neighboring_tents_above:
             print(f"|   |   |   On {neighboring_tent}")
-            func = local_function.get_value(len(local_function.function[0]) - 1)[tent.get_space_patch().get_elements().index(element)]
-            self.function[self.space_time_grid.tents.index(neighboring_tent)].set_initial_value_per_element(func)
+            func = (local_function.get_value(len(local_function.function[0]) - 1)
+                    [tent.get_space_patch().get_elements().index(element)])
+            self.function[self.space_time_grid.tents
+                          .index(neighboring_tent)].set_initial_value_per_element(func)
 
     def get_function_on_tent(self, tent):
         assert tent in self.space_time_grid.tents
@@ -69,14 +78,14 @@ class SpaceTimeFunction:
         return self.get_function_on_tent(tent).get_initial_value()
 
     def get_function_values(self):
-        x = []
-        t = []
-        y = []
+        x_vals = []
+        t_vals = []
+        y_vals = []
 
         for func in self.function:
             tmp = func.get_function_values()
-            x.append(tmp[0])
-            t.append(tmp[1])
-            y.append(tmp[2])
+            x_vals.append(tmp[0])
+            t_vals.append(tmp[1])
+            y_vals.append(tmp[2])
 
-        return x, t, y
+        return x_vals, t_vals, y_vals
