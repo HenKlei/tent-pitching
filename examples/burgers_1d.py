@@ -10,17 +10,18 @@ from tent_pitching.functions import DGFunction
 from tent_pitching.discretizations import DiscontinuousGalerkin
 
 
-vertex1 = Vertex(0., label="Vertex 1")
-vertex2 = Vertex(0.25, label="Vertex 2")
-vertex3 = Vertex(0.75, label="Vertex 3")
-vertex4 = Vertex(1., label="Vertex 4")
+vertex0 = Vertex(0., label="Vertex 0")
+vertex1 = Vertex(0.25, label="Vertex 1")
+vertex2 = Vertex(0.75, label="Vertex 2")
+vertex3 = Vertex(1., label="Vertex 3")
+element0 = Element(vertex0, vertex1, label="Element 0")
 element1 = Element(vertex1, vertex2, label="Element 1")
 element2 = Element(vertex2, vertex3, label="Element 2")
-element3 = Element(vertex3, vertex4, label="Element 2")
-elements = [element1, element2, element3]
+elements = [element0, element1, element2]
 grid = Grid(elements)
 T_MAX = 1.
-characteristic_speed = lambda x: 1.0
+EPS = 1e-0
+characteristic_speed = lambda x: 1.0 + EPS
 
 space_time_grid = perform_tent_pitching(grid, T_MAX, characteristic_speed, n_max=1000, log=True)
 
@@ -48,7 +49,7 @@ def burgers_flux_derivative(u):
 def inverse_transformation(u, phi_1, phi_1_prime, phi_2, phi_2_dt, phi_2_dx):
     return 2 * u / (phi_1_prime + np.sqrt(phi_1_prime**2 - 2 * u * phi_2_dx))
 
-ETA_DIRICHLET = 1e-2
+ETA_DIRICHLET = 1e-4
 
 discretization = DiscontinuousGalerkin(burgers_flux, burgers_flux_derivative,
                                        inverse_transformation, LOCAL_SPACE_GRID_SIZE,

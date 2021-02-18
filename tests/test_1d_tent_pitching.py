@@ -4,14 +4,14 @@ from tent_pitching.visualization import plot_1d_space_time_grid
 
 
 def test_1d_tent_pitching():
-    vertex1 = Vertex(0., label="Vertex 1")
-    vertex2 = Vertex(0.25, label="Vertex 2")
-    vertex3 = Vertex(0.75, label="Vertex 3")
-    vertex4 = Vertex(1., label="Vertex 4")
+    vertex0 = Vertex(0., label="Vertex 0")
+    vertex1 = Vertex(0.25, label="Vertex 1")
+    vertex2 = Vertex(0.75, label="Vertex 2")
+    vertex3 = Vertex(1., label="Vertex 3")
+    element0 = Element(vertex0, vertex1, label="Element 0")
     element1 = Element(vertex1, vertex2, label="Element 1")
     element2 = Element(vertex2, vertex3, label="Element 2")
-    element3 = Element(vertex3, vertex4, label="Element 2")
-    elements = [element1, element2, element3]
+    elements = [element0, element1, element2]
     grid = Grid(elements)
     T_MAX = 1.
     characteristic_speed = lambda x: 1.0

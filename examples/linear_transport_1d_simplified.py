@@ -9,10 +9,10 @@ from tent_pitching.functions import DGFunction
 from tent_pitching.discretizations import DiscontinuousGalerkin
 
 
-vertex1 = Vertex(0., label="Vertex 0")
-vertex2 = Vertex(1., label="Vertex 1")
-element1 = Element(vertex1, vertex2, label="Element 0")
-elements = [element1,]
+vertex0 = Vertex(0., label="Vertex 0")
+vertex1 = Vertex(1., label="Vertex 1")
+element0 = Element(vertex0, vertex1, label="Element 0")
+elements = [element0,]
 grid = Grid(elements)
 T_MAX = 1.
 MU = 1.

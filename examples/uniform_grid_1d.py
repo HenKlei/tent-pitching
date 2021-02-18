@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from tent_pitching import perform_tent_pitching
-from tent_pitching.grids import Vertex, Element, Grid
+from tent_pitching.grids import create_uniform_grid
 from tent_pitching.visualization import (plot_1d_space_time_grid, plot_space_function,
                                          plot_space_time_function)
 from tent_pitching.operators import GridOperator
@@ -10,15 +10,8 @@ from tent_pitching.functions import DGFunction
 from tent_pitching.discretizations import DiscontinuousGalerkin
 
 
-vertex0 = Vertex(0., label="Vertex 0")
-vertex1 = Vertex(0.25, label="Vertex 1")
-vertex2 = Vertex(0.75, label="Vertex 2")
-vertex3 = Vertex(1., label="Vertex 3")
-element0 = Element(vertex0, vertex1, label="Element 0")
-element1 = Element(vertex1, vertex2, label="Element 1")
-element2 = Element(vertex2, vertex3, label="Element 2")
-elements = [element0, element1, element2]
-grid = Grid(elements)
+GLOBAL_SPACE_GRID_SIZE = 0.3333
+grid = create_uniform_grid(GLOBAL_SPACE_GRID_SIZE)
 T_MAX = 1.
 MU = 1.
 EPS = 1e-6

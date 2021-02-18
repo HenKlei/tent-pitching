@@ -1,3 +1,5 @@
+import itertools
+
 from tent_pitching.grids import Patch
 
 
@@ -97,3 +99,26 @@ class Grid:
                 for vertex in element.get_vertices() if not (vertex in seen or seen_add(vertex))]
         #return list(set([vertex for element in self.elements
         #                  for vertex in element.get_vertices()]))
+
+
+def create_uniform_grid(global_space_grid_size, left=0., right=1.):
+    num_vertices = int((right - left) / global_space_grid_size) + 1
+    diff = (right - left) / (num_vertices - 1.)
+
+    vertices = []
+    for i in range(num_vertices):
+        vertices.append(Vertex(left + i * diff, label=f"Vertex {i}"))
+
+
+    def pairwise(iterable):
+        "s -> (s0,s1), (s1,s2), (s2, s3), ..."
+        first, second = itertools.tee(iterable)
+        next(second, None)
+        return zip(first, second)
+
+
+    elements = []
+    for i, tmp in enumerate(pairwise(vertices)):
+        elements.append(Element(tmp[0], tmp[1], label=f"Element {i}"))
+
+    return Grid(elements)
