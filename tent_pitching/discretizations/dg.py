@@ -29,7 +29,7 @@ class DiscontinuousGalerkin:
     def _R(self, tent, local_solution, dirichlet_value_left, dirichlet_value_right, t_ref):
         vector = np.zeros(len(tent.get_space_patch().get_elements())
                           * int(1. / self.local_space_grid_size))
-        l = 0
+        pos = 0
 
         for j, function in enumerate(local_solution):
             function_value = function.get_values()
@@ -40,13 +40,13 @@ class DiscontinuousGalerkin:
 
                 val = 0.
 
-                if l == 0:
+                if pos == 0:
                     # Boundary values
                     val -= self.eta_dirichlet * 1. * dirichlet_value_left
 
                     function_value_left = function_value[i]
                     function_value_right = function_value[i+1]
-                elif l == len(vector) - 1:
+                elif pos == len(vector) - 1:
                     # Boundary values
                     val -= self.eta_dirichlet * 1. * dirichlet_value_right
 
@@ -71,10 +71,10 @@ class DiscontinuousGalerkin:
                 delta_phi = tent.get_top_front_value(phi) - tent.get_bottom_front_value(phi)
                 val += ((self.numerical_flux(function_value_central, function_value_left, -1.)
                          + self.numerical_flux(function_value_central, function_value_right, 1.)
-                        ) * delta_phi)
+                         ) * delta_phi)
 
-                vector[l] = val
-                l += 1
+                vector[pos] = val
+                pos += 1
 
         return vector
 

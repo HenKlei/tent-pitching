@@ -1,6 +1,5 @@
 from tent_pitching import perform_tent_pitching
 from tent_pitching.grids import Vertex, Element, Grid
-from tent_pitching.visualization import plot_1d_space_time_grid
 
 
 def test_1d_tent_pitching():
@@ -14,7 +13,9 @@ def test_1d_tent_pitching():
     elements = [element0, element1, element2]
     grid = Grid(elements)
     T_MAX = 1.
-    characteristic_speed = lambda x: 1.0
+
+    def characteristic_speed(x):
+        return 1.
 
     space_time_grid = perform_tent_pitching(grid, T_MAX, characteristic_speed, n_max=1000, log=True)
 

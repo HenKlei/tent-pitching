@@ -1,5 +1,3 @@
-import numpy as np
-
 from tent_pitching.functions import LocalSpaceTimeFunction
 
 
@@ -55,10 +53,10 @@ class SpaceTimeFunction:
     def set_function_on_tent(self, tent, local_function):
         assert tent in self.space_time_grid.tents
         assert isinstance(local_function, LocalSpaceTimeFunction)
+        # Check if for each element the values from the tent below and above fit together!
         if not tent.has_initial_boundary():
-#            assert local_function.get_value(0)
-            # Check if for each element the values from the tent below and above fit together!
             pass
+            # assert local_function.get_value(0)
 
         self.function[self.space_time_grid.tents.index(tent)] = local_function
         # Set initial values for neighboring tents above!

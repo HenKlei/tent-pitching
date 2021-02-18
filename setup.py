@@ -9,5 +9,5 @@ setup(
     author='Hendrik Kleikamp',
     maintainer='Hendrik Kleikamp',
     maintainer_email='hendrik.kleikamp@uni-muenster.de',
-    packages=['tent_pitching',],
+    packages=['tent_pitching', ],
 )

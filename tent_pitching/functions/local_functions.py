@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
 
 
 class DGFunction:
@@ -49,7 +48,8 @@ class DGFunction:
 
 
 class LocalSpaceTimeFunction:
-    def __init__(self, tent, LocalSpaceFunctionType, local_space_grid_size=1e-1, local_time_grid_size=1e-1):
+    def __init__(self, tent, LocalSpaceFunctionType, local_space_grid_size=1e-1,
+                 local_time_grid_size=1e-1):
         self.tent = tent
         self.local_time_grid_size = local_time_grid_size
 
@@ -57,7 +57,8 @@ class LocalSpaceTimeFunction:
         for element in tent.get_space_patch().get_elements():
             tmp = []
             for _ in range(int(1. / local_time_grid_size) + 1):
-                tmp.append(LocalSpaceFunctionType(element, local_space_grid_size=local_space_grid_size))
+                tmp.append(LocalSpaceFunctionType(element,
+                                                  local_space_grid_size=local_space_grid_size))
             self.function.append(tmp)
 
     def set_value(self, time, function_list):
