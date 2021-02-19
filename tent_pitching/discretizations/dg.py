@@ -22,21 +22,25 @@ class DiscontinuousGalerkin:
         self.numerical_flux = NumericalFlux(flux, lambda_)
 
     def _get_mass_matrix(self, tent):
-        num_dofs = len(tent.get_space_patch().get_elements()) * int(1. / self.local_space_grid_size)
-        mass_matrix = self.local_space_grid_size * np.eye(num_dofs)
+        num_dofs = int(1. / self.local_space_grid_size)
+        matrices = []
+        import scipy.linalg
+        for element in tent.get_space_patch().get_elements():
+            matrices.append(self.local_space_grid_size * (element.vertex_right.coordinate - element.vertex_left.coordinate) * np.eye(num_dofs))
+        mass_matrix = scipy.linalg.block_diag(*matrices)#self.local_space_grid_size * np.eye(num_dofs)
         return mass_matrix
 
     def _R(self, tent, local_solution, dirichlet_value_left, dirichlet_value_right, t_ref):
-        vector = np.zeros(len(tent.get_space_patch().get_elements())
-                          * int(1. / self.local_space_grid_size))
+        vector = np.zeros(sum([int(1. / self.local_space_grid_size) for element in tent.get_space_patch().get_elements()]))
         pos = 0
 
         for j, function in enumerate(local_solution):
             function_value = function.get_values()
 
             for i, function_value_central in enumerate(function_value):
-                x_ref = tent.get_space_patch().to_local(function.element.to_global(
-                    self.local_space_grid_size * (0.5 + i)))
+                local_coordinate = (0.5 + i) * self.local_space_grid_size
+                x = function.element.vertex_left.coordinate + local_coordinate * (function.element.vertex_right.coordinate - function.element.vertex_left.coordinate)
+                assert x in tent.get_space_patch()
 
                 val = 0.
 
@@ -67,11 +71,10 @@ class DiscontinuousGalerkin:
 
                 # Using the values at the boundary here does not seem to work somehow,
                 # although that should be the proper way to do this!
-                phi = tent.get_space_transformation(x_ref)
-                delta_phi = tent.get_top_front_value(phi) - tent.get_bottom_front_value(phi)
+                delta = tent.get_top_front_value(x) - tent.get_bottom_front_value(x)
                 val += ((self.numerical_flux(function_value_central, function_value_left, -1.)
                          + self.numerical_flux(function_value_central, function_value_right, 1.)
-                         ) * delta_phi)
+                         ) * delta)
 
                 vector[pos] = val
                 pos += 1
@@ -87,15 +90,13 @@ class DiscontinuousGalerkin:
             function_values = function.get_values()
             val = np.zeros(len(function_values))
             for j, u_hat in enumerate(function_values):
-                x_ref = tent.get_space_patch().to_local(
-                    function.element.to_global((j + 0.5) * self.local_space_grid_size))
-                phi_1 = tent.get_space_transformation(x_ref)
-                phi_1_prime = tent.get_space_transformation_dx(x_ref)
-                phi_2 = tent.get_time_transformation(x_ref, t_ref)
-                phi_2_dt = tent.get_time_transformation_dt(x_ref, t_ref)
-                phi_2_dx = tent.get_time_transformation_dx(x_ref, t_ref)
-                val[j] = self.inverse_transformation(u_hat, phi_1, phi_1_prime,
-                                                     phi_2, phi_2_dt, phi_2_dx)
+                local_coordinate = (0.5 + j) * self.local_space_grid_size
+                x = function.element.vertex_left.coordinate + local_coordinate * (function.element.vertex_right.coordinate - function.element.vertex_left.coordinate)
+
+                phi_2 = tent.get_time_transformation(x, t_ref)
+                phi_2_dt = tent.get_time_transformation_dt(x, t_ref)
+                phi_2_dx = tent.get_time_transformation_dx(x, t_ref)
+                val[j] = self.inverse_transformation(u_hat, phi_2, phi_2_dt, phi_2_dx)
             function.set_values(val)
 
         dirichlet_value_left = local_solution[0].get_values()[0]
@@ -120,8 +121,9 @@ class DiscontinuousGalerkin:
         local_functions = [self.LocalSpaceFunctionType(element, self.local_space_grid_size)
                            for element in tent.get_space_patch().get_elements()]
 
-        for i, function in enumerate(local_functions):
-            function.set_values(rhs[i * int(1. / self.local_space_grid_size):
-                                    (i + 1) * int(1. / self.local_space_grid_size)])
+        j = 0
+        for function in local_functions:
+            function.set_values(rhs[j:j + int(1. / self.local_space_grid_size)])
+            j += int(1. / self.local_space_grid_size)
 
         return local_functions

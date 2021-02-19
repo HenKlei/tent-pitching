@@ -71,16 +71,6 @@ class Element:
         # Do something more elaborate here!
         return characteristic_speed(self.get_vertices()[0].coordinate)
 
-    def to_local(self, x):
-        assert x in self
-        return (x - self.vertex_left.coordinate) / self.length
-
-    def to_global(self, x):
-        return self.vertex_left.coordinate + x * self.length
-
-    def to_global_dx(self, x):
-        return self.length
-
 
 class Grid:
     def __init__(self, elements):

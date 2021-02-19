@@ -13,42 +13,6 @@ class Patch:
             return x in self.element_left
         return x in self.element_right or x in self.element_left
 
-    def to_local(self, x):
-        assert x in self
-
-        if self.element_right is None:
-            return self.element_left.to_local(x)
-        if self.element_left is None:
-            return self.element_right.to_local(x)
-
-        if x in self.element_right:
-            return .5 + self.element_right.to_local(x) / 2.
-        return self.element_left.to_local(x) / 2.
-
-    def to_global(self, x_ref):
-        assert 0. <= x_ref <= 1.
-
-        if self.element_right is None:
-            return self.element_left.to_global(x_ref)
-        if self.element_left is None:
-            return self.element_right.to_global(x_ref)
-
-        if x_ref >= .5:
-            return self.element_right.to_global((x_ref - .5) * 2.)
-        return self.element_left.to_global(2. * x_ref)
-
-    def to_global_dx(self, x_ref):
-        assert 0. <= x_ref <= 1.
-
-        if self.element_right is None:
-            return self.element_left.to_global_dx(x_ref)
-        if self.element_left is None:
-            return self.element_right.to_global_dx(x_ref)
-
-        if x_ref >= .5:
-            return self.element_right.to_global_dx((x_ref - .5) * 2.)
-        return self.element_left.to_global(2. * x_ref)
-
     def get_elements(self):
         return [elem for elem in [self.element_left, self.element_right, ] if elem is not None]
 

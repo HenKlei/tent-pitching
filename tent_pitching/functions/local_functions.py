@@ -8,29 +8,31 @@ class DGFunction:
         self.function = np.zeros(int(1. / local_space_grid_size))
 
     def interpolate(self, u):
+        # Integration would be preferable here!
         for i in range(len(self.function)):
-            local_coordinate = self.local_space_grid_size / 2. + i * self.local_space_grid_size
-            self.function[i] = u(self.element.to_global(local_coordinate))
+            local_coordinate = (0.5 + i) * self.local_space_grid_size
+            self.function[i] = u(self.element.vertex_left.coordinate + local_coordinate * (self.element.vertex_right.coordinate - self.element.vertex_left.coordinate))
 
     def get_values(self):
         return self.function
 
     def set_values(self, values):
+        assert self.function.shape == values.shape
         self.function = values
 
     def get_function_values(self):
         x_vals = []
         y_vals = []
         for i in range(len(self.function)):
-            local_coordinate = self.local_space_grid_size / 2. + i * self.local_space_grid_size
-            x_vals.append(self.element.to_global(local_coordinate))
+            local_coordinate = (0.5 + i) * self.local_space_grid_size
+            x_vals.append(self.element.vertex_left.coordinate + local_coordinate * (self.element.vertex_right.coordinate - self.element.vertex_left.coordinate))
             y_vals.append(self.function[i])
         return x_vals, y_vals
 
     def __add__(self, other):
         assert isinstance(other, self.__class__)
         assert self.element == other.element
-        assert self.local_space_grid_size == other.local_space_grid_size
+        assert self.function.shape == other.function.shape
 
         tmp = DGFunction(self.element, local_space_grid_size=self.local_space_grid_size)
         tmp.function = self.function + other.function
@@ -98,8 +100,7 @@ class LocalSpaceTimeFunction:
                 x_vals.append(tmp[0])
                 tmp2 = []
                 for x_val in tmp[0]:
-                    x_ref = self.tent.get_space_patch().to_local(x_val)
-                    tmp2.append(self.tent.get_time_transformation(x_ref, t_ref))
+                    tmp2.append(self.tent.get_time_transformation(x_val, t_ref))
                 t_vals.append(tmp2)
                 y_vals.append(tmp[1])
 

@@ -10,11 +10,11 @@ from tent_pitching.functions import DGFunction
 from tent_pitching.discretizations import DiscontinuousGalerkin
 
 
-GLOBAL_SPACE_GRID_SIZE = 0.3333
+GLOBAL_SPACE_GRID_SIZE = 0.2#0.333333
 grid = create_uniform_grid(GLOBAL_SPACE_GRID_SIZE)
 T_MAX = 1.
 MU = 1.
-EPS = 1e-6
+EPS = 1e-0
 
 
 def characteristic_speed(x):
@@ -52,10 +52,12 @@ def linear_transport_flux_derivative(u):
     return 0.
 
 
-def inverse_transformation(u, phi_1, phi_1_prime, phi_2, phi_2_dt, phi_2_dx):
-    return u
+def inverse_transformation(u, phi_2, phi_2_dt, phi_2_dx):
+    # return u
     # Should actually be:
-    # return u / (phi_1_prime - phi_2_dx * MU)
+#    if np.abs(1. - phi_2_dx * MU) < 1.:
+#        print(np.abs(1. - phi_2_dx * MU))
+    return u / (1. - phi_2_dx * MU)
 
 
 ETA_DIRICHLET = 1e-5

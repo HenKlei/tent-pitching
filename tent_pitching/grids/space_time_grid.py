@@ -138,30 +138,19 @@ class SpaceTimeTent:
     def get_top_front_derivative(self, x):
         return self._get_front_derivative(x, self.top_space_time_vertex)
 
-    def get_space_transformation(self, x_ref):
-        # phi_1
-        return self.get_space_patch().to_global(x_ref)
-
-    def get_space_transformation_dx(self, x_ref):
-        # phi_1_derivative
-        return self.get_space_patch().to_global_dx(x_ref)
-
-    def get_time_transformation(self, x_ref, t_ref):
+    def get_time_transformation(self, x, t_ref):
         # phi_2
-        return ((1. - t_ref) * self.get_bottom_front_value(self.get_space_transformation(x_ref)) +
-                t_ref * self.get_top_front_value(self.get_space_transformation(x_ref)))
+        return ((1. - t_ref) * self.get_bottom_front_value(x) +
+                t_ref * self.get_top_front_value(x))
 
-    def get_time_transformation_dx(self, x_ref, t_ref):
+    def get_time_transformation_dx(self, x, t_ref):
         # phi_2_dx
-        return (((1. - t_ref) *
-                 self.get_bottom_front_derivative(self.get_space_transformation(x_ref)) +
-                 t_ref * self.get_top_front_derivative(self.get_space_transformation(x_ref))) *
-                self.get_space_transformation_dx(x_ref))
+        return ((1. - t_ref) * self.get_bottom_front_derivative(x) +
+                t_ref * self.get_top_front_derivative(x))
 
-    def get_time_transformation_dt(self, x_ref, t_ref):
+    def get_time_transformation_dt(self, x, t_ref):
         # phi_2_dt
-        return (-self.get_bottom_front_value(self.get_space_transformation(x_ref)) +
-                self.get_top_front_value(self.get_space_transformation(x_ref)))
+        return -self.get_bottom_front_value(x) + self.get_top_front_value(x)
 
 
 class AdvancingFront:

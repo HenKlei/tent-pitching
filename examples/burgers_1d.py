@@ -10,9 +10,9 @@ from tent_pitching.functions import DGFunction
 from tent_pitching.discretizations import DiscontinuousGalerkin
 
 
-grid = create_uniform_grid(0.25)
-T_MAX = 1.
-EPS = 1e-6
+grid = create_uniform_grid(0.33333333)
+T_MAX = 2.
+EPS = 1e-0
 
 
 def characteristic_speed(x):
@@ -23,8 +23,8 @@ space_time_grid = perform_tent_pitching(grid, T_MAX, characteristic_speed, n_max
 
 plot_1d_space_time_grid(space_time_grid, title='Space time grid obtained via tent pitching')
 
-LOCAL_SPACE_GRID_SIZE = 1e-1
-LOCAL_TIME_GRID_SIZE = 1e-1
+LOCAL_SPACE_GRID_SIZE = 1e-2
+LOCAL_TIME_GRID_SIZE = 1e-2
 
 grid_operator = GridOperator(space_time_grid, DGFunction,
                              local_space_grid_size=LOCAL_SPACE_GRID_SIZE,
@@ -50,10 +50,10 @@ def burgers_flux_derivative(u):
     return u
 
 
-def inverse_transformation(u, phi_1, phi_1_prime, phi_2, phi_2_dt, phi_2_dx):
+def inverse_transformation(u, phi_2, phi_2_dt, phi_2_dx):
     return u
     # Should actually be:
-    # return 2 * u / (phi_1_prime + np.sqrt(phi_1_prime**2 - 2 * u * phi_2_dx))
+    # return 2 * u / (1 + np.sqrt(1 - 2 * u * phi_2_dx))
 
 
 ETA_DIRICHLET = 1e-4

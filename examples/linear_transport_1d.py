@@ -17,7 +17,7 @@ vertex3 = Vertex(1., label="Vertex 3")
 element0 = Element(vertex0, vertex1, label="Element 0")
 element1 = Element(vertex1, vertex2, label="Element 1")
 element2 = Element(vertex2, vertex3, label="Element 2")
-elements = [element0, element1, element2]
+elements = [element0, element1, element2, ]
 grid = Grid(elements)
 T_MAX = 1.
 MU = 1.
@@ -59,7 +59,7 @@ def linear_transport_flux_derivative(u):
     return 0.
 
 
-def inverse_transformation(u, phi_1, phi_1_prime, phi_2, phi_2_dt, phi_2_dx):
+def inverse_transformation(u, phi_2, phi_2_dt, phi_2_dx):
     return u
     # Should actually be:
     # return u / (phi_1_prime - phi_2_dx * MU)
