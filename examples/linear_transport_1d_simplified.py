@@ -25,7 +25,7 @@ def characteristic_speed(x):
 
 space_time_grid = perform_tent_pitching(grid, T_MAX, characteristic_speed, n_max=1000, log=True)
 
-plot_1d_space_time_grid(space_time_grid)
+plot_1d_space_time_grid(space_time_grid, title='Space time grid obtained via tent pitching')
 
 LOCAL_SPACE_GRID_SIZE = 1e-2
 LOCAL_TIME_GRID_SIZE = 1e-2
@@ -43,7 +43,7 @@ def u_0_function(x, jump=True):
 
 u_0 = grid_operator.interpolate(u_0_function)
 
-plot_space_function(u_0)
+plot_space_function(u_0, title='Initial condition interpolated to DG space')
 
 
 def linear_transport_flux(u):
@@ -66,6 +66,6 @@ discretization = DiscontinuousGalerkin(linear_transport_flux, linear_transport_f
 
 u = grid_operator.solve(u_0, discretization)
 
-plot_space_time_function(u)
+plot_space_time_function(u, title='Space time solution')
 
 plt.show()
