@@ -31,9 +31,9 @@ grid_operator = GridOperator(space_time_grid, DGFunction,
                              local_time_grid_size=LOCAL_TIME_GRID_SIZE)
 
 
-def u_0_function(x, jump=False):
+def u_0_function(x, jump=True):
     if jump:
-        return 1. * (x <= 0.25)
+        return 1. * (x <= 0.25) + 0.25 * (0.25 < x <= 0.5)
     return 0.5 * (1.0 + np.cos(2.0 * np.pi * x)) * (0.0 <= x <= 0.5) + 0. * (x > 0.5)
 
 

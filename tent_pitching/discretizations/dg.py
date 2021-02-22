@@ -84,13 +84,11 @@ class DiscontinuousGalerkin:
                 delta = tent.get_top_front_value(x) - tent.get_bottom_front_value(x)
                 delta_left = tent.get_top_front_value(x_left) - tent.get_bottom_front_value(x_left)
                 delta_right = tent.get_top_front_value(x_right) - tent.get_bottom_front_value(x_right)
-                val += ((self.numerical_flux(function_value_central, function_value_left, -1.)
-                         + self.numerical_flux(function_value_central, function_value_right, 1.)
+                val += ((self.numerical_flux(function_value_central, function_value_right)
+                         - self.numerical_flux(function_value_left, function_value_central)
                          ) * delta)
-#                val += (self.numerical_flux(function_value_central, function_value_left, -1.) * delta_left
-#                        + self.numerical_flux(function_value_central, function_value_right, 1.) * delta_right)
-                if np.abs(val) >= 1e-3:
-                    print(val, pos)
+#                val += (self.numerical_flux(function_value_central, function_value_right) * delta_right
+#                        - self.numerical_flux(function_value_left, function_value_central) * delta_left)
 
                 vector[pos] = val
                 pos += 1
