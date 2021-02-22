@@ -11,7 +11,7 @@ from tent_pitching.discretizations import DiscontinuousGalerkin
 
 
 grid = create_uniform_grid(0.33333333)
-T_MAX = 2.
+T_MAX = 1.
 EPS = 1e-0
 
 
@@ -51,12 +51,10 @@ def burgers_flux_derivative(u):
 
 
 def inverse_transformation(u, phi_2, phi_2_dt, phi_2_dx):
-    return u
-    # Should actually be:
-    # return 2 * u / (1 + np.sqrt(1 - 2 * u * phi_2_dx))
+    return 2 * u / (1 + np.sqrt(1 - 2 * u * phi_2_dx))
 
 
-ETA_DIRICHLET = 1e-4
+ETA_DIRICHLET = 0.#1e-4
 
 discretization = DiscontinuousGalerkin(burgers_flux, burgers_flux_derivative,
                                        inverse_transformation, LOCAL_SPACE_GRID_SIZE,

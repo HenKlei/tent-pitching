@@ -10,7 +10,7 @@ from tent_pitching.functions import DGFunction
 from tent_pitching.discretizations import DiscontinuousGalerkin
 
 
-GLOBAL_SPACE_GRID_SIZE = 0.2#0.333333
+GLOBAL_SPACE_GRID_SIZE = 0.3333333
 grid = create_uniform_grid(GLOBAL_SPACE_GRID_SIZE)
 T_MAX = 1.
 MU = 1.
@@ -25,8 +25,8 @@ space_time_grid = perform_tent_pitching(grid, T_MAX, characteristic_speed, n_max
 
 plot_1d_space_time_grid(space_time_grid, title='Space time grid obtained via tent pitching')
 
-LOCAL_SPACE_GRID_SIZE = 1e-1
-LOCAL_TIME_GRID_SIZE = 1e-1
+LOCAL_SPACE_GRID_SIZE = 1e-2
+LOCAL_TIME_GRID_SIZE = 1e-2
 
 grid_operator = GridOperator(space_time_grid, DGFunction,
                              local_space_grid_size=LOCAL_SPACE_GRID_SIZE,
@@ -49,14 +49,10 @@ def linear_transport_flux(u):
 
 
 def linear_transport_flux_derivative(u):
-    return 0.
+    return MU
 
 
 def inverse_transformation(u, phi_2, phi_2_dt, phi_2_dx):
-    # return u
-    # Should actually be:
-#    if np.abs(1. - phi_2_dx * MU) < 1.:
-#        print(np.abs(1. - phi_2_dx * MU))
     return u / (1. - phi_2_dx * MU)
 
 
