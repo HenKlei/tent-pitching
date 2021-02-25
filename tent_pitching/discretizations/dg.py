@@ -1,4 +1,5 @@
 import numpy as np
+import scipy.linalg
 
 from tent_pitching.functions import DGFunction
 from .numerical_fluxes import LaxFriedrichsFlux
@@ -6,12 +7,10 @@ from .numerical_fluxes import LaxFriedrichsFlux
 
 class DiscontinuousGalerkin:
     def __init__(self, flux, flux_derivative, inverse_transformation, local_space_grid_size,
-                 local_time_grid_size, NumericalFlux=LaxFriedrichsFlux, eta_dirichlet=1.):
+                 local_time_grid_size, NumericalFlux=LaxFriedrichsFlux):
         self.flux = flux
         self.flux_derivative = flux_derivative
         self.inverse_transformation = inverse_transformation
-
-        self.eta_dirichlet = eta_dirichlet
 
         self.LocalSpaceFunctionType = DGFunction
 
@@ -22,11 +21,14 @@ class DiscontinuousGalerkin:
         self.numerical_flux = NumericalFlux(flux, lambda_)
 
     def _get_mass_matrix(self, tent):
-        num_dofs = len(tent.get_space_patch().get_elements()) * int(1. / self.local_space_grid_size)
-        mass_matrix = self.local_space_grid_size * np.eye(num_dofs)
+        num_dofs = int(1. / self.local_space_grid_size)
+        matrices = []
+        for element in tent.get_space_patch().get_elements():
+            matrices.append(self.local_space_grid_size * element.get_volume() * np.eye(num_dofs))
+        mass_matrix = scipy.linalg.block_diag(*matrices)
         return mass_matrix
 
-    def _R(self, tent, local_solution, dirichlet_value_left, dirichlet_value_right, t_ref):
+    def _R(self, tent, local_solution, t_ref):
         vector = np.zeros(len(tent.get_space_patch().get_elements())
                           * int(1. / self.local_space_grid_size))
         pos = 0
@@ -35,21 +37,12 @@ class DiscontinuousGalerkin:
             function_value = function.get_values()
 
             for i, function_value_central in enumerate(function_value):
-                x_ref = tent.get_space_patch().to_local(function.element.to_global(
-                    self.local_space_grid_size * (0.5 + i)))
-
                 val = 0.
 
                 if pos == 0:
-                    # Boundary values
-                    val -= self.eta_dirichlet * 1. * dirichlet_value_left
-
                     function_value_left = function_value[i]
                     function_value_right = function_value[i+1]
                 elif pos == len(vector) - 1:
-                    # Boundary values
-                    val -= self.eta_dirichlet * 1. * dirichlet_value_right
-
                     function_value_left = function_value[i-1]
                     function_value_right = function_value[i]
                 else:
@@ -67,11 +60,20 @@ class DiscontinuousGalerkin:
 
                 # Using the values at the boundary here does not seem to work somehow,
                 # although that should be the proper way to do this!
-                phi = tent.get_space_transformation(x_ref)
-                delta_phi = tent.get_top_front_value(phi) - tent.get_bottom_front_value(phi)
-                val += ((self.numerical_flux(function_value_central, function_value_left, -1.)
-                         + self.numerical_flux(function_value_central, function_value_right, 1.)
-                         ) * delta_phi)
+                x_ref_left = tent.get_space_patch().to_local(function.element.to_global(
+                    self.local_space_grid_size * i))
+                x_ref_right = tent.get_space_patch().to_local(function.element.to_global(
+                    self.local_space_grid_size * (1. + i)))
+                phi_left = tent.get_space_transformation(x_ref_left)
+                phi_right = tent.get_space_transformation(x_ref_right)
+                delta_phi_left = (tent.get_top_front_value(phi_left) -
+                                  tent.get_bottom_front_value(phi_left))
+                delta_phi_right = (tent.get_top_front_value(phi_right) -
+                                   tent.get_bottom_front_value(phi_right))
+                val += (self.numerical_flux(function_value_central, function_value_right) *
+                            delta_phi_right
+                            - self.numerical_flux(function_value_left, function_value_central) *
+                            delta_phi_left)
 
                 vector[pos] = val
                 pos += 1
@@ -98,11 +100,7 @@ class DiscontinuousGalerkin:
                                                      phi_2, phi_2_dt, phi_2_dx)
             function.set_values(val)
 
-        dirichlet_value_left = local_solution[0].get_values()[0]
-        dirichlet_value_right = local_solution[-1].get_values()[-1]
-
-        return self._R(tent, transformed_solution, dirichlet_value_left,
-                       dirichlet_value_right, t_ref)
+        return self._R(tent, transformed_solution, t_ref)
 
     def right_hand_side(self, tent, local_solution, t_ref):
         assert all(isinstance(sol, self.LocalSpaceFunctionType) for sol in local_solution)

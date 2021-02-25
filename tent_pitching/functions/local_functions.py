@@ -51,6 +51,7 @@ class LocalSpaceTimeFunction:
     def __init__(self, tent, LocalSpaceFunctionType, local_space_grid_size=1e-1,
                  local_time_grid_size=1e-1):
         self.tent = tent
+        self.local_space_grid_size = local_space_grid_size
         self.local_time_grid_size = local_time_grid_size
 
         self.function = []
@@ -73,8 +74,21 @@ class LocalSpaceTimeFunction:
     def set_initial_value(self, function_list):
         self.set_value(0, function_list)
 
-    def set_initial_value_per_element(self, func):
+    def set_initial_value_per_element(self, func, transformation=None):
         assert func.element in self.tent.get_space_patch().get_elements()
+
+        if transformation is None:
+            def transformation(u_hat, phi_1_prime, phi_2_dx):
+                return u_hat
+
+        tmp = np.zeros(len(func.get_values()))
+        for j, u_hat in enumerate(func.get_values()):
+            x_ref = self.tent.get_space_patch().to_local(
+                func.element.to_global((j + 0.5) * self.local_space_grid_size))
+            phi_1_prime = self.tent.get_space_transformation_dx(x_ref)
+            phi_2_dx = self.tent.get_time_transformation_dx(x_ref, 0)
+            tmp[j] = transformation(u_hat, phi_1_prime, phi_2_dx)
+        func.set_values(tmp)
         self.function[self.tent.get_space_patch().get_elements().index(func.element)][0] = func
 
     def get_value(self, time):
@@ -86,7 +100,7 @@ class LocalSpaceTimeFunction:
     def get_initial_value(self):
         return self.get_value(0)
 
-    def get_function_values(self):
+    def get_function_values(self, inverse_transformation):
         x_vals = []
         t_vals = []
         y_vals = []
@@ -101,6 +115,24 @@ class LocalSpaceTimeFunction:
                     x_ref = self.tent.get_space_patch().to_local(x_val)
                     tmp2.append(self.tent.get_time_transformation(x_ref, t_ref))
                 t_vals.append(tmp2)
-                y_vals.append(tmp[1])
+
+                y = []
+                for x_val, y_val in zip(tmp[0], tmp[1]):
+                    x_ref = self.tent.get_space_patch().to_local(x_val)
+                    phi_1 = self.tent.get_space_transformation(x_ref)
+                    phi_1_prime = self.tent.get_space_transformation_dx(x_ref)
+                    phi_2 = self.tent.get_time_transformation(x_ref, t_ref)
+                    phi_2_dt = self.tent.get_time_transformation_dt(x_ref, t_ref)
+                    phi_2_dx = self.tent.get_time_transformation_dx(x_ref, t_ref)
+                    y_tmp = inverse_transformation(y_val, phi_1, phi_1_prime,
+                                                    phi_2, phi_2_dt, phi_2_dx)
+#                    if t_ref == 0.2:
+#                        print(y_tmp, y_val)
+                    if -1 <= y_tmp <= 2.:
+                        y.append(y_tmp)
+                    else:
+                        y.append(0.)
+
+                y_vals.append(y)#tmp[1])
 
         return x_vals, t_vals, y_vals

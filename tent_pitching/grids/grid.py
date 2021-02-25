@@ -71,6 +71,9 @@ class Element:
         # Do something more elaborate here!
         return characteristic_speed(self.get_vertices()[0].coordinate)
 
+    def get_volume(self):
+        return self.vertex_right.coordinate - self.vertex_left.coordinate
+
     def to_local(self, x):
         assert x in self
         return (x - self.vertex_left.coordinate) / self.length

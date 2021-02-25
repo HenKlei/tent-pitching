@@ -28,7 +28,10 @@ class GridOperator:
                                      local_space_grid_size=self.local_space_grid_size,
                                      local_time_grid_size=self.local_time_grid_size)
 
-        function.set_global_initial_value(u_0)
+        def transformation(u_hat, phi_1_prime, phi_2_dx):
+            return phi_1_prime * u_hat - discretization.flux(u_hat) * phi_2_dx
+
+        function.set_global_initial_value(u_0, transformation)
 
         print("\033[1mIteration over the tents of the space time grid...\033[0m")
         for tent in self.space_time_grid.tents:

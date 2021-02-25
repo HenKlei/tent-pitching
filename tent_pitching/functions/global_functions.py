@@ -44,11 +44,11 @@ class SpaceTimeFunction:
                                                 local_time_grid_size=local_time_grid_size)
                          for tent in space_time_grid.tents]
 
-    def set_global_initial_value(self, u_0):
+    def set_global_initial_value(self, u_0, transformation):
         assert isinstance(u_0, SpaceFunction)
         for i, tent in enumerate(self.space_time_grid.tents):
             for element in tent.get_initial_boundary_elements():
-                self.function[i].set_initial_value_per_element(u_0.get_function_on_element(element))
+                self.function[i].set_initial_value_per_element(u_0.get_function_on_element(element), transformation)
 
     def set_function_on_tent(self, tent, local_function):
         assert tent in self.space_time_grid.tents
@@ -75,13 +75,13 @@ class SpaceTimeFunction:
     def get_initial_value_on_tent(self, tent):
         return self.get_function_on_tent(tent).get_initial_value()
 
-    def get_function_values(self):
+    def get_function_values(self, transformation):
         x_vals = []
         t_vals = []
         y_vals = []
 
         for func in self.function:
-            tmp = func.get_function_values()
+            tmp = func.get_function_values(transformation)
             x_vals.append(tmp[0])
             t_vals.append(tmp[1])
             y_vals.append(tmp[2])

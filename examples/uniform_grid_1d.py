@@ -14,7 +14,7 @@ GLOBAL_SPACE_GRID_SIZE = 0.3333
 grid = create_uniform_grid(GLOBAL_SPACE_GRID_SIZE)
 T_MAX = 1.
 MU = 1.
-EPS = 1e-6
+EPS = 1e-0
 
 
 def characteristic_speed(x):
@@ -53,19 +53,16 @@ def linear_transport_flux_derivative(u):
 
 
 def inverse_transformation(u, phi_1, phi_1_prime, phi_2, phi_2_dt, phi_2_dx):
-    return u
-    # Should actually be:
-    # return u / (phi_1_prime - phi_2_dx * MU)
+    return u / (phi_1_prime - phi_2_dx * MU)
 
-
-ETA_DIRICHLET = 1e-5
 
 discretization = DiscontinuousGalerkin(linear_transport_flux, linear_transport_flux_derivative,
                                        inverse_transformation, LOCAL_SPACE_GRID_SIZE,
-                                       LOCAL_TIME_GRID_SIZE, eta_dirichlet=ETA_DIRICHLET)
+                                       LOCAL_TIME_GRID_SIZE)
 
 u = grid_operator.solve(u_0, discretization)
 
-plot_space_time_function(u, title='Space time solution')
+plot_space_time_function(u, inverse_transformation, title='Space time solution',
+                         three_d=True, space_time_grid=space_time_grid)
 
 plt.show()
