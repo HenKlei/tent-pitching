@@ -48,7 +48,8 @@ class SpaceTimeFunction:
         assert isinstance(u_0, SpaceFunction)
         for i, tent in enumerate(self.space_time_grid.tents):
             for element in tent.get_initial_boundary_elements():
-                self.function[i].set_initial_value_per_element(u_0.get_function_on_element(element), transformation)
+                self.function[i].set_initial_value_per_element(u_0.get_function_on_element(element),
+                                                               transformation)
 
     def set_function_on_tent(self, tent, local_function):
         assert tent in self.space_time_grid.tents

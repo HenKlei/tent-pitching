@@ -116,7 +116,7 @@ class LocalSpaceTimeFunction:
                     tmp2.append(self.tent.get_time_transformation(x_ref, t_ref))
                 t_vals.append(tmp2)
 
-                y = []
+                y_transformed = []
                 for x_val, y_val in zip(tmp[0], tmp[1]):
                     x_ref = self.tent.get_space_patch().to_local(x_val)
                     phi_1 = self.tent.get_space_transformation(x_ref)
@@ -124,15 +124,8 @@ class LocalSpaceTimeFunction:
                     phi_2 = self.tent.get_time_transformation(x_ref, t_ref)
                     phi_2_dt = self.tent.get_time_transformation_dt(x_ref, t_ref)
                     phi_2_dx = self.tent.get_time_transformation_dx(x_ref, t_ref)
-                    y_tmp = inverse_transformation(y_val, phi_1, phi_1_prime,
-                                                    phi_2, phi_2_dt, phi_2_dx)
-#                    if t_ref == 0.2:
-#                        print(y_tmp, y_val)
-                    if -1 <= y_tmp <= 2.:
-                        y.append(y_tmp)
-                    else:
-                        y.append(0.)
-
-                y_vals.append(y)#tmp[1])
+                    y_transformed.append(inverse_transformation(y_val, phi_1, phi_1_prime,
+                                                                phi_2, phi_2_dt, phi_2_dx))
+                y_vals.append(y_transformed)
 
         return x_vals, t_vals, y_vals

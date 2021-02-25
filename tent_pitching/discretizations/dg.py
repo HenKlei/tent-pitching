@@ -71,9 +71,9 @@ class DiscontinuousGalerkin:
                 delta_phi_right = (tent.get_top_front_value(phi_right) -
                                    tent.get_bottom_front_value(phi_right))
                 val += (self.numerical_flux(function_value_central, function_value_right) *
-                            delta_phi_right
-                            - self.numerical_flux(function_value_left, function_value_central) *
-                            delta_phi_left)
+                        delta_phi_right
+                        - self.numerical_flux(function_value_left, function_value_central) *
+                        delta_phi_left)
 
                 vector[pos] = val
                 pos += 1
