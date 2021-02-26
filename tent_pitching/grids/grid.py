@@ -12,7 +12,7 @@ class Vertex:
         self.patch = None
 
     def __str__(self):
-        return self.label + f" at {self.coordinate}"
+        return self.label + f" at {self.coordinate:.3f}"
 
     def get_adjacent_vertices(self):
         adjacent_vertices = []

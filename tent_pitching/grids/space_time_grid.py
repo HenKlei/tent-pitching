@@ -12,7 +12,7 @@ class SpaceTimeVertex:
         self.tent_below = None
 
     def __str__(self):
-        return self.space_vertex.__str__() + f"; time: {self.time}"
+        return self.space_vertex.__str__() + f"; time: {self.time:.3f}"
 
 
 class SpaceTimeTent:

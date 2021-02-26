@@ -33,7 +33,7 @@ class GridOperator:
 
         function.set_global_initial_value(u_0, transformation)
 
-        print("\033[1mIteration over the tents of the space time grid...\033[0m")
+        print("\033[1mIterating over the tents of the space time grid...\033[0m")
         for tent in self.space_time_grid.tents:
             print(f"|   Solving on {tent}")
             local_initial_value = function.get_initial_value_on_tent(tent)
