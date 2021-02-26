@@ -27,8 +27,8 @@ space_time_grid = perform_tent_pitching(grid, T_MAX, characteristic_speed, n_max
 
 plot_1d_space_time_grid(space_time_grid, title='Space time grid obtained via tent pitching')
 
-LOCAL_SPACE_GRID_SIZE = 5e-3
-LOCAL_TIME_GRID_SIZE = 5e-3
+LOCAL_SPACE_GRID_SIZE = 1e-2
+LOCAL_TIME_GRID_SIZE = 1e-2
 
 grid_operator = GridOperator(space_time_grid, DGFunction,
                              local_space_grid_size=LOCAL_SPACE_GRID_SIZE,

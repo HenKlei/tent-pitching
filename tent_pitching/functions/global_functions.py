@@ -59,10 +59,12 @@ class SpaceTimeFunction:
             # assert local_function.get_value(0)
 
         self.function[self.space_time_grid.tents.index(tent)] = local_function
+
         # Set initial values for neighboring tents above!
-        print("|   |   Setting initial values on neighboring tents...")
+        if len(tent.neighboring_tents_above) > 0:
+            print("|   |   Setting initial values on neighboring tents...")
+
         for neighboring_tent, element in tent.neighboring_tents_above:
-            print(f"|   |   |   On {neighboring_tent}")
             func = (local_function.get_value(len(local_function.function[0]) - 1)
                     [tent.get_space_patch().get_elements().index(element)])
             self.function[self.space_time_grid.tents
