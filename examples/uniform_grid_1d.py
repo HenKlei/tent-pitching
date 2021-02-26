@@ -12,13 +12,13 @@ from tent_pitching.discretizations import DiscontinuousGalerkin
 
 GLOBAL_SPACE_GRID_SIZE = 0.3333333
 grid = create_uniform_grid(GLOBAL_SPACE_GRID_SIZE)
-T_MAX = 1.
-MU = 1.
+T_MAX = 2.
+MU = 0.5
 EPS = 1e-0
 
 
 def characteristic_speed(x):
-    return MU + EPS
+    return 2.#MU + EPS
 
 
 space_time_grid = perform_tent_pitching(grid, T_MAX, characteristic_speed, n_max=1000, log=True)
@@ -56,14 +56,12 @@ def inverse_transformation(u, phi_2, phi_2_dt, phi_2_dx):
     return u / (1. - phi_2_dx * MU)
 
 
-ETA_DIRICHLET = 1e-5
-
 discretization = DiscontinuousGalerkin(linear_transport_flux, linear_transport_flux_derivative,
                                        inverse_transformation, LOCAL_SPACE_GRID_SIZE,
-                                       LOCAL_TIME_GRID_SIZE, eta_dirichlet=ETA_DIRICHLET)
+                                       LOCAL_TIME_GRID_SIZE)
 
 u = grid_operator.solve(u_0, discretization)
 
-plot_space_time_function(u, title='Space time solution')
+plot_space_time_function(u, inverse_transformation, title='Space time solution')
 
 plt.show()

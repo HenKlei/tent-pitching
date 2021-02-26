@@ -75,13 +75,13 @@ class SpaceTimeFunction:
     def get_initial_value_on_tent(self, tent):
         return self.get_function_on_tent(tent).get_initial_value()
 
-    def get_function_values(self):
+    def get_function_values(self, transformation):
         x_vals = []
         t_vals = []
         y_vals = []
 
         for func in self.function:
-            tmp = func.get_function_values()
+            tmp = func.get_function_values(transformation)
             x_vals.append(tmp[0])
             t_vals.append(tmp[1])
             y_vals.append(tmp[2])

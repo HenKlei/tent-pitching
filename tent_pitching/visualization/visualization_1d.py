@@ -54,13 +54,13 @@ def plot_space_function(u, title=''):
     return fig
 
 
-def plot_space_time_function(u, title=''):
+def plot_space_time_function(u, transformation, title=''):
     assert isinstance(u, SpaceTimeFunction)
 
     fig = plt.figure()
     axes = fig.add_subplot(1, 1, 1)
 
-    function_values = u.get_function_values()
+    function_values = u.get_function_values(transformation)
 
     max_val = np.max(np.max(np.array(function_values, dtype=list)))
     min_val = np.min(np.min(np.array(function_values, dtype=list)))
