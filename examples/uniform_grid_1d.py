@@ -14,7 +14,7 @@ GLOBAL_SPACE_GRID_SIZE = 0.3333
 grid = create_uniform_grid(GLOBAL_SPACE_GRID_SIZE)
 T_MAX = 1.
 MU = 1.
-EPS = 1e-0
+EPS = 4e-0
 
 
 def characteristic_speed(x):

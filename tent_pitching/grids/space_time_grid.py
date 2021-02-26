@@ -33,7 +33,7 @@ class SpaceTimeTent:
 
     def __str__(self):
         if self.number is not None:
-            return f"""Tent number {self.number} pitched above of \
+            return f"""Tent {self.number} pitched above of \
 {self.bottom_space_time_vertex.space_vertex}"""
         return "Tent without number pitched above of {self.bottom_space_time_vertex.space_vertex}"
 

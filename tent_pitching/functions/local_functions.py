@@ -76,7 +76,7 @@ class LocalSpaceTimeFunction:
 
     def set_initial_value_per_element(self, func, transformation=None):
         assert func.element in self.tent.get_space_patch().get_elements()
-
+        """
         if transformation is None:
             def transformation(u_hat, phi_1_prime, phi_2_dx):
                 return u_hat
@@ -89,6 +89,7 @@ class LocalSpaceTimeFunction:
             phi_2_dx = self.tent.get_time_transformation_dx(x_ref, 0)
             tmp[j] = transformation(u_hat, phi_1_prime, phi_2_dx)
         func.set_values(tmp)
+        """
         self.function[self.tent.get_space_patch().get_elements().index(func.element)][0] = func
 
     def get_value(self, time):

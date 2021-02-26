@@ -44,7 +44,9 @@ class GridOperator:
 
     def solve_local_problem(self, tent, local_initial_value, discretization):
         assert tent in self.space_time_grid.tents
-        # local_initial_value has to be list of LocalSpaceFunctions
+        assert isinstance(local_initial_value, list)
+        assert all(isinstance(function, self.LocalSpaceFunctionType)
+                   for function in local_initial_value)
 
         local_solution = LocalSpaceTimeFunction(tent, self.LocalSpaceFunctionType,
                                                 local_space_grid_size=self.local_space_grid_size,

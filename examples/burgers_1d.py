@@ -51,7 +51,7 @@ def burgers_flux_derivative(u):
 
 
 def inverse_transformation(u, phi_1, phi_1_prime, phi_2, phi_2_dt, phi_2_dx):
-    return 2 * u / (phi_1_prime + np.sqrt(np.abs(phi_1_prime**2 - 2 * u * phi_2_dx)))
+    return 2 * u / (phi_1_prime + np.sqrt(phi_1_prime**2 - 2 * u * phi_2_dx))
 
 
 discretization = DiscontinuousGalerkin(burgers_flux, burgers_flux_derivative,

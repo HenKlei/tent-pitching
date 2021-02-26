@@ -58,8 +58,6 @@ class DiscontinuousGalerkin:
                         function_value_left = function_value[i-1]
                         function_value_right = function_value[i+1]
 
-                # Using the values at the boundary here does not seem to work somehow,
-                # although that should be the proper way to do this!
                 x_ref_left = tent.get_space_patch().to_local(function.element.to_global(
                     self.local_space_grid_size * i))
                 x_ref_right = tent.get_space_patch().to_local(function.element.to_global(
