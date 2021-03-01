@@ -91,9 +91,9 @@ class DiscontinuousGalerkin:
                     function.element.to_global((j + 0.5) * self.local_space_grid_size))
                 phi_1 = tent.get_space_transformation(x_ref)
                 phi_1_prime = tent.get_space_transformation_dx(x_ref)
-                phi_2 = tent.get_time_transformation(x_ref, t_ref)
-                phi_2_dt = tent.get_time_transformation_dt(x_ref, t_ref)
-                phi_2_dx = tent.get_time_transformation_dx(x_ref, t_ref)
+                phi_2 = tent.get_time_transformation(phi_1, t_ref)
+                phi_2_dt = tent.get_time_transformation_dt(phi_1, t_ref)
+                phi_2_dx = tent.get_time_transformation_dx(phi_1, t_ref)
                 val[j] = self.inverse_transformation(u_hat, phi_1, phi_1_prime,
                                                      phi_2, phi_2_dt, phi_2_dx)
             function.set_values(val)

@@ -53,7 +53,7 @@ def linear_transport_flux_derivative(u):
 
 
 def inverse_transformation(u, phi_1, phi_1_prime, phi_2, phi_2_dt, phi_2_dx):
-    return u / (phi_1_prime - phi_2_dx * MU)
+    return u / (phi_1_prime * (1. - phi_2_dx * MU))
 
 
 discretization = DiscontinuousGalerkin(linear_transport_flux, linear_transport_flux_derivative,

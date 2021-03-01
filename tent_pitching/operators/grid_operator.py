@@ -29,7 +29,7 @@ class GridOperator:
                                      local_time_grid_size=self.local_time_grid_size)
 
         def transformation(u_hat, phi_1_prime, phi_2_dx):
-            return phi_1_prime * u_hat - discretization.flux(u_hat) * phi_2_dx
+            return phi_1_prime * (u_hat - discretization.flux(u_hat) * phi_2_dx)
 
         function.set_global_initial_value(u_0, transformation)
 
