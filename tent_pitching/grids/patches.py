@@ -1,6 +1,3 @@
-
-
-
 class Patch:
     def __init__(self, vertex):
         self.central_vertex = vertex
@@ -40,20 +37,20 @@ class Patch:
             return self.element_right.to_global((x_ref - .5) * 2.)
         return self.element_left.to_global(2. * x_ref)
 
-    def to_global_derviative(self, x_ref):
+    def to_global_dx(self, x_ref):
         assert 0. <= x_ref <= 1.
 
         if self.element_right is None:
-            return self.element_left.to_global_derivative(x_ref)
+            return self.element_left.to_global_dx(x_ref)
         if self.element_left is None:
-            return self.element_right.to_global_derivative(x_ref)
+            return self.element_right.to_global_dx(x_ref)
 
         if x_ref >= .5:
-            return self.element_right.to_global_derivative((x_ref - .5) * 2.)
-        return self.element_left.to_global(2. * x_ref)
+            return 2. * self.element_right.to_global_dx((x_ref - .5) * 2.)
+        return 2. * self.element_left.to_global_dx(2. * x_ref)
 
     def get_elements(self):
-        return [elem for elem in [self.element_left, self.element_right,] if elem is not None]
+        return [elem for elem in [self.element_left, self.element_right, ] if elem is not None]
 
     def is_boundary_patch(self):
         return len(self.get_elements()) == 1
