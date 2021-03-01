@@ -37,8 +37,6 @@ class DiscontinuousGalerkin:
             function_value = function.get_values()
 
             for i, function_value_central in enumerate(function_value):
-                val = 0.
-
                 if pos == 0:
                     function_value_left = function_value[i]
                     function_value_right = function_value[i+1]
@@ -68,7 +66,7 @@ class DiscontinuousGalerkin:
                                   tent.get_bottom_front_value(phi_left))
                 delta_phi_right = (tent.get_top_front_value(phi_right) -
                                    tent.get_bottom_front_value(phi_right))
-                val += (self.numerical_flux(function_value_central, function_value_right) *
+                val = -(self.numerical_flux(function_value_central, function_value_right) *
                         delta_phi_right
                         - self.numerical_flux(function_value_left, function_value_central) *
                         delta_phi_left)
