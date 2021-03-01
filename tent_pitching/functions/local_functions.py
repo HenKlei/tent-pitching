@@ -49,6 +49,11 @@ class DGFunction:
         tmp.function = other * self.function
         return tmp
 
+    def __truediv__(self, other):
+        assert isinstance(other, float)
+
+        return (1. / other) * self
+
     def __sub__(self, other):
         return self + (-1.) * other
 

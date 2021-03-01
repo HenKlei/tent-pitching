@@ -51,8 +51,6 @@ class DiscontinuousGalerkin:
                            local_coordinate * (function.element.vertex_right.coordinate -
                                                function.element.vertex_left.coordinate))
 
-                val = 0.
-
                 if pos == 0:
                     function_value_left = function_value[i]
                     function_value_right = function_value[i+1]
@@ -76,7 +74,7 @@ class DiscontinuousGalerkin:
                               tent.get_bottom_front_value(x_left))
                 delta_right = (tent.get_top_front_value(x_right) -
                                tent.get_bottom_front_value(x_right))
-                val += (self.numerical_flux(function_value_central, function_value_right) *
+                val = -(self.numerical_flux(function_value_central, function_value_right) *
                         delta_right
                         - self.numerical_flux(function_value_left, function_value_central) *
                         delta_left)
