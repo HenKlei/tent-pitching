@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from tent_pitching import perform_tent_pitching
-from tent_pitching.grids import Vertex, Element, Grid, create_uniform_grid
+from tent_pitching.grids import create_uniform_grid
 from tent_pitching.visualization import (plot_1d_space_time_grid, plot_space_function,
                                          plot_space_time_function)
 from tent_pitching.operators import GridOperator
@@ -62,6 +62,7 @@ plot_space_function(u_0, title='Initial condition interpolated to DG space')
 
 u = grid_operator.solve(u_0)
 
-plot_space_time_function(u, inverse_transformation, title='Space time solution', three_d=True, space_time_grid=space_time_grid)
+plot_space_time_function(u, inverse_transformation, title='Space time solution',
+                         three_d=True, space_time_grid=space_time_grid)
 
 plt.show()

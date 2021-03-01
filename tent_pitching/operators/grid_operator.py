@@ -15,9 +15,10 @@ class GridOperator:
         self.local_time_grid_size = local_time_grid_size
 
         self.LocalSpaceFunctionType = LocalSpaceFunctionType
-        assert discretization.LocalSpaceFunctionType == self.LocalSpaceFunctionType
+        self.discretization = discretization
+        assert self.discretization.LocalSpaceFunctionType == self.LocalSpaceFunctionType
 
-        self.time_stepper = TimeStepperType(discretization, self.local_time_grid_size)
+        self.time_stepper = TimeStepperType(self.discretization, self.local_time_grid_size)
 
     def interpolate(self, u):
         u_interpolated = SpaceFunction(self.space_time_grid.space_grid,
@@ -33,7 +34,7 @@ class GridOperator:
                                      local_time_grid_size=self.local_time_grid_size)
 
         def transformation(u_hat, phi_1_prime, phi_2_dx):
-            return phi_1_prime * (u_hat - discretization.flux(u_hat) * phi_2_dx)
+            return phi_1_prime * (u_hat - self.discretization.flux(u_hat) * phi_2_dx)
 
         function.set_global_initial_value(u_0, transformation)
 
