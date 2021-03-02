@@ -65,8 +65,8 @@ u = grid_operator.solve(u_0)
 plot_space_time_function(u, inverse_transformation, title='Space time solution',
                          three_d=True, space_time_grid=space_time_grid)
 
-tent_number = 5
-u_local = u.get_function_on_tent(space_time_grid.tents[tent_number])
+TENT_NUMBER = 5
+u_local = u.get_function_on_tent(space_time_grid.tents[TENT_NUMBER])
 plot_on_reference_tent(u_local, inverse_transformation, title='Local solution on reference tent',
                        three_d=True)
 

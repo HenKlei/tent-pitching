@@ -117,33 +117,17 @@ def plot_on_reference_tent(u_local, transformation, title='', three_d=False):
     else:
         axes = fig.add_subplot(1, 1, 1)
 
-    num_elements = len(u_local.tent.get_space_patch().get_elements())
-
     function_values = u_local.get_function_values(transformation)
 
     max_val = np.max(np.max(np.array(function_values, dtype=list)))
     min_val = np.min(np.min(np.array(function_values, dtype=list)))
 
-    for i, element_function in enumerate(u_local.function):
-        z_val = [element_time_function.get_values() for element_time_function in element_function]
-        x_val = np.linspace(0.5 * element_function[0].local_space_grid_size, 1 - 0.5 * element_function[0].local_space_grid_size, len(z_val[0]))
-        y_val = [[y,] * len(z_val[0]) for y in np.linspace(0, 1, len(z_val))]
-        for y, z in zip(y_val, z_val):
-            z_transformed = []
-            x_transformed = []
-            for x_ref, t_ref, val in zip(x_val, y, z):
-                x = element_function[0].element.vertex_left.coordinate + x_ref * (element_function[0].element.vertex_right.coordinate - element_function[0].element.vertex_left.coordinate)
-                phi_2 = u_local.tent.get_time_transformation(x, t_ref)
-                phi_2_dt = u_local.tent.get_time_transformation_dt(x, t_ref)
-                phi_2_dx = u_local.tent.get_time_transformation_dx(x, t_ref)
-                z_transformed.append(transformation(val, phi_2, phi_2_dt, phi_2_dx))
-                x_transformed.append((x_ref + i) / num_elements)
-            if three_d:
-                scatter = axes.scatter(x_transformed, y, z_transformed, c=z_transformed,
-                                       vmin=min_val, vmax=max_val)
-            else:
-                scatter = axes.scatter(x_transformed, y, c=z_transformed,
-                                       vmin=min_val, vmax=max_val)
+    for i, (x_val, _, z_val) in enumerate(zip(*function_values)):
+        y_val = [(i % len(u_local.function[0])) * u_local.local_time_grid_size, ] * len(z_val)
+        if three_d:
+            scatter = axes.scatter(x_val, y_val, z_val, c=z_val, vmin=min_val, vmax=max_val)
+        else:
+            scatter = axes.scatter(x_val, y_val, c=z_val, vmin=min_val, vmax=max_val)
 
     fig.colorbar(scatter)
 
