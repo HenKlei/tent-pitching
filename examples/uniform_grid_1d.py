@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from tent_pitching import perform_tent_pitching
 from tent_pitching.grids import create_uniform_grid
 from tent_pitching.visualization import (plot_1d_space_time_grid, plot_space_function,
-                                         plot_space_time_function)
+                                         plot_space_time_function, plot_on_reference_tent)
 from tent_pitching.operators import GridOperator
 from tent_pitching.functions import DGFunction
 from tent_pitching.discretizations import DiscontinuousGalerkin
@@ -62,6 +62,12 @@ plot_space_function(u_0, title='Initial condition interpolated to DG space')
 
 u = grid_operator.solve(u_0)
 
-plot_space_time_function(u, inverse_transformation, title='Space time solution', three_d=True)
+plot_space_time_function(u, inverse_transformation, title='Space time solution',
+                         three_d=True, space_time_grid=space_time_grid)
+
+tent_number = 5
+u_local = u.get_function_on_tent(space_time_grid.tents[tent_number])
+plot_on_reference_tent(u_local, inverse_transformation, title='Local solution on reference tent',
+                       three_d=True)
 
 plt.show()
