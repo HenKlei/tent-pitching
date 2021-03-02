@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from tent_pitching import perform_tent_pitching
 from tent_pitching.grids import Vertex, Element, Grid, create_uniform_grid
 from tent_pitching.visualization import (plot_1d_space_time_grid, plot_space_function,
-                                         plot_space_time_function)
+                                         plot_space_time_function, plot_on_reference_tent)
 from tent_pitching.operators import GridOperator
 from tent_pitching.functions import DGFunction
 from tent_pitching.discretizations import DiscontinuousGalerkin, RungeKutta4
@@ -13,7 +13,7 @@ from tent_pitching.discretizations import DiscontinuousGalerkin, RungeKutta4
 grid = create_uniform_grid(0.33333333)
 T_MAX = 1.
 MAX_SPEED = 6.
-MU = 2.
+MU = 1.
 
 
 def characteristic_speed(x):
@@ -62,6 +62,12 @@ plot_space_function(u_0, title='Initial condition interpolated to DG space')
 
 u = grid_operator.solve(u_0)
 
-plot_space_time_function(u, inverse_transformation, title='Space time solution', three_d=True, space_time_grid=space_time_grid)
+plot_space_time_function(u, inverse_transformation, title='Space time solution',
+                         three_d=True, space_time_grid=space_time_grid)
+
+TENT_NUMBER = 5
+u_local = u.get_function_on_tent(space_time_grid.tents[TENT_NUMBER])
+plot_on_reference_tent(u_local, inverse_transformation, title='Local solution on reference tent',
+                       three_d=True)
 
 plt.show()

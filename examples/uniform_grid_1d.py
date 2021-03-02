@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import pickle
 
 from tent_pitching import perform_tent_pitching
 from tent_pitching.grids import create_uniform_grid
@@ -7,26 +8,26 @@ from tent_pitching.visualization import (plot_1d_space_time_grid, plot_space_fun
                                          plot_space_time_function, plot_on_reference_tent)
 from tent_pitching.operators import GridOperator
 from tent_pitching.functions import DGFunction
-from tent_pitching.discretizations import DiscontinuousGalerkin
+from tent_pitching.discretizations import DiscontinuousGalerkin, RungeKutta4
 
 
 GLOBAL_SPACE_GRID_SIZE = 0.3333333
 grid = create_uniform_grid(GLOBAL_SPACE_GRID_SIZE)
 T_MAX = 1.
-MU = 1.
-EPS = 2e-0
+MU = 2.
+MAX_SPEED = 5.
 
 
 def characteristic_speed(x):
-    return MU + EPS
+    return MAX_SPEED
 
 
 space_time_grid = perform_tent_pitching(grid, T_MAX, characteristic_speed, n_max=1000, log=True)
 
 plot_1d_space_time_grid(space_time_grid, title='Space time grid obtained via tent pitching')
 
-LOCAL_SPACE_GRID_SIZE = 1e-2
-LOCAL_TIME_GRID_SIZE = 1e-2
+LOCAL_SPACE_GRID_SIZE = 1e-1#2
+LOCAL_TIME_GRID_SIZE = 1e-1#2
 
 
 def linear_transport_flux(u):
@@ -46,6 +47,7 @@ discretization = DiscontinuousGalerkin(linear_transport_flux, linear_transport_f
                                        LOCAL_TIME_GRID_SIZE)
 
 grid_operator = GridOperator(space_time_grid, discretization, DGFunction,
+                             TimeStepperType=RungeKutta4,
                              local_space_grid_size=LOCAL_SPACE_GRID_SIZE,
                              local_time_grid_size=LOCAL_TIME_GRID_SIZE)
 
@@ -71,3 +73,32 @@ plot_on_reference_tent(u_local, inverse_transformation, title='Local solution on
                        three_d=True)
 
 plt.show()
+
+
+# Compute L2-error
+def exact_solution(x, t):
+    return u_0_function(x - MU * t)
+
+
+u_values = u.get_function_values(inverse_transformation)
+u_exact = []
+error = 0.
+c = 0
+for x_val, t_val, z_val in zip(*u_values):
+    tmp = []
+    for xs, ts, zs in zip(x_val, t_val, z_val):
+        tmp_2 = []
+        for x, t, z in zip(xs, ts, zs):
+            tmp_2.append(exact_solution(x, t))
+            error += (exact_solution(x, t) - z)**2
+            c += 1
+        tmp.append(tmp_2)
+    u_exact.append(tmp)
+
+print(f"L2-error: {np.sqrt(error / c)}")
+
+
+# Save computed solution on disk
+FILENAME = f'u_mu_{str(MU).replace(".", "_")}'
+with open(FILENAME, 'wb') as f:
+    pickle.dump(u_local.get_function_values_as_matrix(inverse_transformation), f)

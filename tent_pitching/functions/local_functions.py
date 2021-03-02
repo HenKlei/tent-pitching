@@ -121,3 +121,7 @@ class LocalSpaceTimeFunction:
                 y_vals.append(y_transformed)
 
         return x_vals, t_vals, y_vals
+
+    def get_function_values_as_matrix(self, transformation):
+        _, _, values = self.get_function_values(transformation)
+        return np.array(values)
