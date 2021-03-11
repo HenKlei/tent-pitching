@@ -1,13 +1,13 @@
-#!/usr/bin/env python
+from setuptools import setup, find_packages
 
-from distutils.core import setup
 
 setup(
     name='tent-pitching',
     version='0.1.0',
-    description='Python Implementation of the tent pitching algorithm for spacetime discretization',
+    description='Python implementation of the tent pitching approach for spacetime discretizations',
     author='Hendrik Kleikamp',
+    author_email='hendrik.kleikamp@uni-muenster.de',
     maintainer='Hendrik Kleikamp',
     maintainer_email='hendrik.kleikamp@uni-muenster.de',
-    packages=['tent_pitching',],
+    packages=find_packages(),
 )
