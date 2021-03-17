@@ -90,7 +90,7 @@ class LocalSpaceTimeFunction:
 
     def get_value(self, time):
         assert isinstance(time, int)
-        assert 0 <= time <= int(1. / self.local_time_grid_size) + 1
+        assert 0 <= time < int(1. / self.local_time_grid_size) + 1
 
         return [self.function[i][time] for i in range(len(self.function))]
 
@@ -123,5 +123,19 @@ class LocalSpaceTimeFunction:
         return x_vals, t_vals, y_vals
 
     def get_function_values_as_matrix(self, transformation):
-        _, _, values = self.get_function_values(transformation)
-        return np.array(values)
+        tmp_mat = []
+        for element_functions in self.function:
+            element_matrix = []
+            for time, func in enumerate(element_functions):
+                t_ref = time * self.local_time_grid_size
+                tmp = func.get_function_values()
+                y_transformed = []
+                for x_val, y_val in zip(tmp[0], tmp[1]):
+                    phi_2 = self.tent.get_time_transformation(x_val, t_ref)
+                    phi_2_dt = self.tent.get_time_transformation_dt(x_val, t_ref)
+                    phi_2_dx = self.tent.get_time_transformation_dx(x_val, t_ref)
+                    y_transformed.append(transformation(y_val, phi_2, phi_2_dt, phi_2_dx))
+                element_matrix.append(y_transformed)
+            tmp_mat.append(np.vstack(element_matrix).transpose())
+
+        return np.vstack(tmp_mat)
