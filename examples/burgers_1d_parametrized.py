@@ -1,6 +1,7 @@
+import os
+import pickle
 import numpy as np
 import matplotlib.pyplot as plt
-import pickle
 
 from typer import Option, run
 
@@ -22,34 +23,29 @@ LOCAL_TIME_GRID_SIZE = 1e-2
 
 TENT_NUMBER = 5
 
+FILEPATH_RESULTS = 'results_Burgers/'
+
 
 def main(MU: float = Option(1., help='Parameter mu that determines the velocity')):
     assert 0. < MU <= MAX_SPEED / 2.
 
     grid = create_uniform_grid(GLOBAL_SPACE_GRID_SIZE)
 
-
     def characteristic_speed(x):
         return MAX_SPEED
 
+    space_time_grid = perform_tent_pitching(grid, T_MAX, characteristic_speed, n_max=1000)
 
-    space_time_grid = perform_tent_pitching(grid, T_MAX, characteristic_speed, n_max=1000, log=True)
-
-    plot_1d_space_time_grid(space_time_grid, title='Space time grid obtained via tent pitching')
-
-
+    plot_1d_space_time_grid(space_time_grid, title='Spacetime mesh obtained via tent pitching')
 
     def burgers_flux(u):
         return 0.5 * MU * u**2
 
-
     def burgers_flux_derivative(u):
         return u * MU
 
-
     def inverse_transformation(u, phi_2, phi_2_dt, phi_2_dx):
         return 2 * u / (1 + np.sqrt(1 - 2 * u * phi_2_dx * MU))
-
 
     discretization = DiscontinuousGalerkin(burgers_flux, burgers_flux_derivative,
                                            inverse_transformation, LOCAL_SPACE_GRID_SIZE,
@@ -60,12 +56,10 @@ def main(MU: float = Option(1., help='Parameter mu that determines the velocity'
                                  local_space_grid_size=LOCAL_SPACE_GRID_SIZE,
                                  local_time_grid_size=LOCAL_TIME_GRID_SIZE)
 
-
-    def u_0_function(x, jumps=False):
+    def u_0_function(x, jumps=True):
         if jumps:
             return 1. * (x <= 0.25) + 0.25 * (0.25 < x <= 0.5)
         return 0.5 * (1.0 + np.cos(2.0 * np.pi * x)) * (0.0 <= x <= 0.5) + 0. * (x > 0.5)
-
 
     u_0 = grid_operator.interpolate(u_0_function)
 
@@ -73,17 +67,24 @@ def main(MU: float = Option(1., help='Parameter mu that determines the velocity'
 
     u = grid_operator.solve(u_0)
 
-    plot_space_time_function(u, inverse_transformation, title='Space time solution',
+    plot_space_time_function(u, inverse_transformation, title=f'Spacetime solution for mu={MU}',
                              three_d=True, space_time_grid=space_time_grid)
+
+    u_plot = plot_space_time_function(u, inverse_transformation, title=f'Spacetime solution for mu={MU}',
+                                      three_d=False, space_time_grid=space_time_grid)
+    u_plot.savefig(FILEPATH_RESULTS + f'u_mu_{str(MU).replace(".", "_")}_global.pdf')
 
     u_local = u.get_function_on_tent(space_time_grid.tents[TENT_NUMBER])
     plot_on_reference_tent(u_local, inverse_transformation,
-                           title='Local solution on reference tent', three_d=True)
+                           title=f'Local solution on reference tent for mu={MU}', three_d=True)
 
     plt.show()
 
+    if not os.path.exists(FILEPATH_RESULTS):
+        os.makedirs(FILEPATH_RESULTS)
+
     # Save computed solution on disk
-    with open(f'u_Burgers_mu_{str(MU).replace(".", "_")}', 'wb') as file_obj:
+    with open(FILEPATH_RESULTS + f'u_Burgers_mu_{str(MU).replace(".", "_")}', 'wb') as file_obj:
         pickle.dump(u_local.get_function_values_as_matrix(inverse_transformation), file_obj)
 
 

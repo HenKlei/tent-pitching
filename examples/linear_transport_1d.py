@@ -28,9 +28,9 @@ def characteristic_speed(x):
     return MU + EPS
 
 
-space_time_grid = perform_tent_pitching(grid, T_MAX, characteristic_speed, n_max=1000, log=True)
+space_time_grid = perform_tent_pitching(grid, T_MAX, characteristic_speed, n_max=1000)
 
-plot_1d_space_time_grid(space_time_grid, title='Space time grid obtained via tent pitching')
+plot_1d_space_time_grid(space_time_grid, title='Spacetime mesh obtained via tent pitching')
 
 LOCAL_SPACE_GRID_SIZE = 1e-2
 LOCAL_TIME_GRID_SIZE = 1e-2
@@ -69,6 +69,6 @@ plot_space_function(u_0, title='Initial condition interpolated to DG space')
 
 u = grid_operator.solve(u_0)
 
-plot_space_time_function(u, inverse_transformation, title='Space time solution')
+plot_space_time_function(u, inverse_transformation, title='Spacetime solution')
 
 plt.show()

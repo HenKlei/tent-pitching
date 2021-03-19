@@ -12,7 +12,7 @@ class SpaceTimeVertex:
         self.tent_below = None
 
     def __str__(self):
-        return self.space_vertex.__str__() + f"; time: {self.time}"
+        return self.space_vertex.__str__() + f"; time: {self.time:.3f}"
 
 
 class SpaceTimeTent:
@@ -33,9 +33,9 @@ class SpaceTimeTent:
 
     def __str__(self):
         if self.number is not None:
-            return f"""Tent number {self.number} pitched above of \
-{self.bottom_space_time_vertex.space_vertex}"""
-        return "Tent without number pitched above of {self.bottom_space_time_vertex.space_vertex}"
+            return (f"Tent number {self.number} pitched above of "
+                    f"{self.bottom_space_time_vertex.space_vertex}")
+        return f"Tent without number pitched above of {self.bottom_space_time_vertex.space_vertex}"
 
     def has_initial_boundary(self):
         if sum(vertex.time == 0.0 for vertex in self.space_time_vertices) >= 2:

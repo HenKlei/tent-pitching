@@ -1,5 +1,6 @@
 from tent_pitching.functions import SpaceFunction, SpaceTimeFunction, LocalSpaceTimeFunction
 from tent_pitching.discretizations import ExplicitEuler
+from tent_pitching.utils.logger import getLogger
 
 
 class GridOperator:
@@ -34,12 +35,14 @@ class GridOperator:
 
         function.set_global_initial_value(u_0)
 
-        print("\033[1mIteration over the tents of the space time grid...\033[0m")
-        for tent in self.space_time_grid.tents:
-            print(f"|   Solving on {tent}")
-            local_initial_value = function.get_initial_value_on_tent(tent)
-            local_solution = self.solve_local_problem(tent, local_initial_value)
-            function.set_function_on_tent(tent, local_solution)
+        logger = getLogger('tent_pitching.GridOperator')
+
+        with logger.block("Iteration over the tents of the space time grid ..."):
+            for tent in self.space_time_grid.tents:
+                logger.info(f"Solving on {tent} ...")
+                local_initial_value = function.get_initial_value_on_tent(tent)
+                local_solution = self.solve_local_problem(tent, local_initial_value)
+                function.set_function_on_tent(tent, local_solution)
 
         return function
 

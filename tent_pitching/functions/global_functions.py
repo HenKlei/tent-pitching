@@ -1,4 +1,5 @@
 from tent_pitching.functions import LocalSpaceTimeFunction
+from tent_pitching.utils.logger import getLogger
 
 
 class SpaceFunction:
@@ -62,7 +63,8 @@ class SpaceTimeFunction:
 
         # Set initial values for neighboring tents above!
         if len(tent.neighboring_tents_above) > 0:
-            print("|   |   Setting initial values on neighboring tents...")
+            logger = getLogger('tent_pitching.functions.global_functions.SpaceTimeFunction')
+            logger.info("Setting initial values on neighboring tents ...")
 
         for neighboring_tent, element in tent.neighboring_tents_above:
             func = (local_function.get_value(len(local_function.function[0]) - 1)
