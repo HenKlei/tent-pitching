@@ -1,31 +1,32 @@
-from tent_pitching.grids import SpaceTimeMesh
+from tent_pitching.grids import SpaceTimeGrid
+from tent_pitching.utils.logger import getLogger
 
 
-def perform_tent_pitching(space_grid, t_max, characteristic_speed, n_max=1000, log=True):
-    space_time_mesh = SpaceTimeMesh(space_grid, t_max, characteristic_speed)
+def perform_tent_pitching(space_grid, t_max, characteristic_speed, n_max=1000):
+    logger = getLogger('tent_pitching')
 
-    n = 0
+    space_time_grid = SpaceTimeGrid(space_grid, t_max, characteristic_speed)
 
-    if log:
-        print("Order of tent pitching locations:")
+    iteration = 0
 
-    while True and n < n_max:
-        space_time_vertex = space_time_mesh.advancing_front.get_feasible_vertex()
-        if space_time_vertex is None:
-            break
+    with logger.block("Creating spacetime grid via tent pitching ..."):
+        while True and iteration < n_max:
+            space_time_vertex = space_time_grid.advancing_front.get_feasible_vertex()
+            if space_time_vertex is None:
+                break
 
-        if log:
-            print(space_time_vertex)
+            logger.info(f"Pitching tent on {space_time_vertex} ...")
 
-        space_time_mesh.pitch_tent(space_time_vertex)
+            space_time_grid.pitch_tent(space_time_vertex)
 
-        n += 1
+            iteration += 1
 
-    if log:
-        print("Finished tent pitching...")
+    logger.info("Finished tent pitching...")
+    logger.info("")
 
-    if space_time_mesh.advancing_front.get_feasible_vertex() is not None:
-        assert n == n_max
-        raise Exception(f"The maximum number of {n_max} tents is reached without finishing the spacetime meshing process!")
+    if space_time_grid.advancing_front.get_feasible_vertex() is not None:
+        assert iteration == n_max
+        raise Exception(f"The maximum number of {n_max} tents is reached without"
+                        "finishing the spacetime meshing process!")
 
-    return space_time_mesh
+    return space_time_grid
