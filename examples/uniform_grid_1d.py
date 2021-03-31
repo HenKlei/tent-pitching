@@ -36,7 +36,8 @@ def main(MU: float = Option(1., help='Parameter mu that determines the velocity.
 
     space_time_grid = perform_tent_pitching(grid, T_MAX, characteristic_speed, n_max=1000)
 
-    plot_grid = plot_1d_space_time_grid(space_time_grid, title='Spacetime mesh obtained via tent pitching')
+    plot_grid = plot_1d_space_time_grid(space_time_grid,
+                                        title='Spacetime mesh obtained via tent pitching')
     plot_grid.savefig(FILEPATH_RESULTS + 'grid.pdf')
 
     def linear_transport_flux(u):
@@ -68,16 +69,19 @@ def main(MU: float = Option(1., help='Parameter mu that determines the velocity.
 
     u = grid_operator.solve(u_0)
 
-    plot_space_time_function(u, inverse_transformation, title=r"Spacetime solution for $\mu=$" + str(MU),
+    plot_space_time_function(u, inverse_transformation,
+                             title=r"Spacetime solution for $\mu=$" + str(MU),
                              three_d=True, space_time_grid=space_time_grid)
 
-    u_plot = plot_space_time_function(u, inverse_transformation, title=r"Spacetime solution for $\mu=$" + str(MU),
+    u_plot = plot_space_time_function(u, inverse_transformation,
+                                      title=r"Spacetime solution for $\mu=$" + str(MU),
                                       space_time_grid=space_time_grid)
     u_plot.savefig(FILEPATH_RESULTS + f'u_mu_{str(MU).replace(".", "_")}_global.pdf')
 
     u_local = u.get_function_on_tent(space_time_grid.tents[TENT_NUMBER])
     plot_on_reference_tent(u_local, inverse_transformation,
-                           title=r"Local solution on reference tent for $\mu=$" + str(MU), three_d=True)
+                           title=r"Local solution on reference tent for $\mu=$" + str(MU),
+                           three_d=True)
 
     plt.show()
 
@@ -109,7 +113,8 @@ def main(MU: float = Option(1., help='Parameter mu that determines the velocity.
         os.makedirs(FILEPATH_RESULTS)
 
     # Save computed solution on disk
-    with open(FILEPATH_RESULTS + f'u_linear_transport_mu_{str(MU).replace(".", "_")}', 'wb') as file_obj:
+    with open(FILEPATH_RESULTS + f'u_linear_transport_mu_{str(MU).replace(".", "_")}',
+              'wb') as file_obj:
         pickle.dump(u_local.get_function_values_as_matrix(inverse_transformation), file_obj)
 
 

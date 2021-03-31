@@ -86,7 +86,8 @@ class ColoredFormatter(logging.Formatter):
         if not record.msg:
             return ' ' * (LAST_TIMESTAMP_LENGTH+1) + '|   ' * INDENT
         if record.levelname == 'BLOCK_TIME':
-            return ' ' * (LAST_TIMESTAMP_LENGTH+1) + '|   ' * (INDENT - 1) + r'\----------------- ' + record.msg
+            return (' ' * (LAST_TIMESTAMP_LENGTH+1) + '|   ' * (INDENT - 1)
+                    + r'\----------------- ' + record.msg)
 
         # handle length change of timestamp
         if len(timestamp) > LAST_TIMESTAMP_LENGTH:
@@ -123,7 +124,8 @@ class ColoredFormatter(logging.Formatter):
                 levelname = ''
             else:
                 path = BOLD_SEQ + path + RESET_SEQ
-                levelname = (COLOR_SEQ % (30 + COLORS[levelname])) + '|' + levelname + '|' + RESET_SEQ
+                levelname = ((COLOR_SEQ % (30 + COLORS[levelname])) + '|' + levelname
+                             + '|' + RESET_SEQ)
         else:
             if levelname in ('INFO', 'BLOCK'):
                 levelname = ''

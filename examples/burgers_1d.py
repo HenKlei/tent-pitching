@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from tent_pitching import perform_tent_pitching
-from tent_pitching.grids import Vertex, Element, Grid, create_uniform_grid
+from tent_pitching.grids import create_uniform_grid
 from tent_pitching.visualization import (plot_1d_space_time_grid, plot_space_function,
                                          plot_space_time_function)
 from tent_pitching.operators import GridOperator
