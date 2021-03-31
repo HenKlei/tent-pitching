@@ -6,7 +6,7 @@ from tent_pitching.grids import SpaceTimeGrid
 from tent_pitching.functions import SpaceFunction, SpaceTimeFunction, LocalSpaceTimeFunction
 
 
-def plot_1d_space_time_grid(space_time_grid, title=''):
+def plot_space_time_grid(space_time_grid, title=''):
     assert isinstance(space_time_grid, SpaceTimeGrid)
     fig = plt.figure()
     axes = fig.add_subplot(1, 1, 1)

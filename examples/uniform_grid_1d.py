@@ -7,8 +7,8 @@ from typer import Option, run
 
 from tent_pitching import perform_tent_pitching
 from tent_pitching.grids import create_uniform_grid
-from tent_pitching.visualization import (plot_1d_space_time_grid, plot_space_function,
-                                         plot_space_time_function, plot_on_reference_tent)
+from tent_pitching.utils.visualization import (plot_space_time_grid, plot_space_function,
+                                               plot_space_time_function, plot_on_reference_tent)
 from tent_pitching.operators import GridOperator
 from tent_pitching.functions import DGFunction
 from tent_pitching.discretizations import DiscontinuousGalerkin, RungeKutta4
@@ -36,8 +36,8 @@ def main(MU: float = Option(1., help='Parameter mu that determines the velocity.
 
     space_time_grid = perform_tent_pitching(grid, T_MAX, characteristic_speed, n_max=1000)
 
-    plot_grid = plot_1d_space_time_grid(space_time_grid,
-                                        title='Spacetime mesh obtained via tent pitching')
+    plot_grid = plot_space_time_grid(space_time_grid,
+                                     title='Spacetime mesh obtained via tent pitching')
     plot_grid.savefig(FILEPATH_RESULTS + 'grid.pdf')
 
     def linear_transport_flux(u):

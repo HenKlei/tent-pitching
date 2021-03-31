@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 
 from tent_pitching import perform_tent_pitching
 from tent_pitching.grids import Vertex, Element, Grid
-from tent_pitching.visualization import (plot_1d_space_time_grid, plot_space_function,
-                                         plot_space_time_function)
+from tent_pitching.utils.visualization import (plot_space_time_grid, plot_space_function,
+                                               plot_space_time_function)
 from tent_pitching.operators import GridOperator
 from tent_pitching.functions import DGFunction
 from tent_pitching.discretizations import DiscontinuousGalerkin
@@ -25,7 +25,7 @@ def characteristic_speed(x):
 
 space_time_grid = perform_tent_pitching(grid, T_MAX, characteristic_speed, n_max=1000)
 
-plot_1d_space_time_grid(space_time_grid, title='Spacetime mesh obtained via tent pitching')
+plot_space_time_grid(space_time_grid, title='Spacetime mesh obtained via tent pitching')
 
 LOCAL_SPACE_GRID_SIZE = 1e-2
 LOCAL_TIME_GRID_SIZE = 1e-2
