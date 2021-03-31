@@ -54,7 +54,7 @@ def plot_space_function(u, title=''):
     return fig
 
 
-def plot_space_time_function(u, transformation, title='', three_d=False, space_time_grid=None):
+def plot_space_time_function(u, transformation, title='', interval=1, three_d=False, space_time_grid=None):
     assert isinstance(u, SpaceTimeFunction)
     assert space_time_grid is None or isinstance(space_time_grid, SpaceTimeGrid)
 
@@ -71,9 +71,9 @@ def plot_space_time_function(u, transformation, title='', three_d=False, space_t
 
     for x_val, y_val, z_val in zip(*function_values):
         if three_d:
-            scatter = axes.scatter(x_val, y_val, z_val, c=z_val, vmin=min_val, vmax=max_val)
+            scatter = axes.scatter(x_val[::interval], y_val[::interval], z_val[::interval], c=z_val[::interval], vmin=min_val, vmax=max_val)
         else:
-            scatter = axes.scatter(x_val, y_val, c=z_val, vmin=min_val, vmax=max_val)
+            scatter = axes.scatter(x_val[::interval], y_val[::interval], c=z_val[::interval], vmin=min_val, vmax=max_val)
 
     fig.colorbar(scatter)
 
@@ -108,7 +108,7 @@ def plot_space_time_function(u, transformation, title='', three_d=False, space_t
     return fig
 
 
-def plot_on_reference_tent(u_local, transformation, title='', three_d=False):
+def plot_on_reference_tent(u_local, transformation, title='', interval=1, three_d=False):
     assert isinstance(u_local, LocalSpaceTimeFunction)
 
     fig = plt.figure()
@@ -125,9 +125,9 @@ def plot_on_reference_tent(u_local, transformation, title='', three_d=False):
     for i, (x_val, _, z_val) in enumerate(zip(*function_values)):
         y_val = [(i % len(u_local.function[0])) * u_local.local_time_grid_size, ] * len(z_val)
         if three_d:
-            scatter = axes.scatter(x_val, y_val, z_val, c=z_val, vmin=min_val, vmax=max_val)
+            scatter = axes.scatter(x_val[::interval], y_val[::interval], z_val[::interval], c=z_val[::interval], vmin=min_val, vmax=max_val)
         else:
-            scatter = axes.scatter(x_val, y_val, c=z_val, vmin=min_val, vmax=max_val)
+            scatter = axes.scatter(x_val[::interval], y_val[::interval], c=z_val[::interval], vmin=min_val, vmax=max_val)
 
     fig.colorbar(scatter)
 
