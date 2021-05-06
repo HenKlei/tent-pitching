@@ -3,6 +3,24 @@ from tent_pitching.utils.logger import getLogger
 
 
 def perform_tent_pitching(space_grid, t_max, characteristic_speed, n_max=1000):
+    """Run the actual tent pitching algorithm.
+
+    Parameters
+    ----------
+    space_grid
+        Grid to pitch the tents on.
+    t_max
+        End time of the simulation.
+    characteristic_speed
+        Maximal velocity of the solution (function that depends on the space position).
+    n_max
+        Maximal number of tents to pitch.
+
+    Returns
+    -------
+    space_time_grid
+        The space time grid obtained via tent pitching.
+    """
     logger = getLogger('tent_pitching')
 
     space_time_grid = SpaceTimeGrid(space_grid, t_max, characteristic_speed)

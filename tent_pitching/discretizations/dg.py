@@ -5,6 +5,17 @@ from tent_pitching.functions import DGFunction
 
 
 class DiscontinuousGalerkin:
+    """Discontinuous Galerkin discretization using numerical fluxes.
+
+    Parameters
+    ----------
+    numerical_flux
+
+    inverse_transformation
+
+    local_space_grid_size
+
+    """
     def __init__(self, numerical_flux, inverse_transformation, local_space_grid_size):
         self.numerical_flux = numerical_flux
         self.inverse_transformation = inverse_transformation
@@ -13,9 +24,31 @@ class DiscontinuousGalerkin:
         self.LocalSpaceFunctionType = DGFunction
 
     def transformation(self, u_hat, phi_2_dx):
+        """
+
+        Parameters
+        ----------
+        u_hat
+
+        phi_2_dx
+
+        """
         return u_hat - self.numerical_flux.flux(u_hat) * phi_2_dx
 
     def right_hand_side(self, tent, local_solution, t_ref):
+        """
+
+        Parameters
+        ----------
+        tent
+
+        local_solution
+
+        t_ref
+
+        Returns
+        -------
+        """
         assert all(isinstance(sol, self.LocalSpaceFunctionType) for sol in local_solution)
         assert self.local_space_grid_size == local_solution[0].local_space_grid_size
 
