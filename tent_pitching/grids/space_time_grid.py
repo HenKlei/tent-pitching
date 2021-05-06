@@ -7,7 +7,7 @@ class SpaceTimeVertex:
         self.time = time
         self.potential_tent_height = 0.
 
-        self.coordinates = [self.space_vertex.coordinate, self.time,]
+        self.coordinates = [self.space_vertex.coordinate, self.time, ]
 
         self.tent_below = None
 

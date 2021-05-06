@@ -11,15 +11,15 @@ from tent_pitching.utils.visualization import (plot_space_time_grid, plot_space_
                                                plot_space_time_function, plot_on_reference_tent)
 from tent_pitching.operators import GridOperator
 from tent_pitching.functions import DGFunction
-from tent_pitching.discretizations import DiscontinuousGalerkin, RungeKutta4
+from tent_pitching.discretizations import DiscontinuousGalerkin, LaxFriedrichsFlux, RungeKutta4
 
 
 GLOBAL_SPACE_GRID_SIZE = 1./3.
 T_MAX = 1.
 MAX_SPEED = 5.
 
-LOCAL_SPACE_GRID_SIZE = 1e-2
-LOCAL_TIME_GRID_SIZE = 1e-2
+LOCAL_SPACE_GRID_SIZE = 1e-1
+LOCAL_TIME_GRID_SIZE = 1e-1
 
 TENT_NUMBER = 5
 
@@ -49,9 +49,12 @@ def main(MU: float = Option(1., help='Parameter mu that determines the velocity.
     def inverse_transformation(u, phi_2, phi_2_dt, phi_2_dx):
         return u / (1. - phi_2_dx * MU)
 
-    discretization = DiscontinuousGalerkin(linear_transport_flux, linear_transport_flux_derivative,
-                                           inverse_transformation, LOCAL_SPACE_GRID_SIZE,
-                                           LOCAL_TIME_GRID_SIZE)
+    lambda_ = LOCAL_TIME_GRID_SIZE / LOCAL_SPACE_GRID_SIZE
+    numerical_flux = LaxFriedrichsFlux(linear_transport_flux, linear_transport_flux_derivative,
+                                       lambda_)
+
+    discretization = DiscontinuousGalerkin(numerical_flux, inverse_transformation,
+                                           LOCAL_SPACE_GRID_SIZE)
 
     grid_operator = GridOperator(space_time_grid, discretization, DGFunction,
                                  TimeStepperType=RungeKutta4,
