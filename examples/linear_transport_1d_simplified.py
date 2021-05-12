@@ -47,10 +47,6 @@ discretization = DiscontinuousGalerkin(linear_transport_flux, linear_transport_f
                                        inverse_transformation, LOCAL_SPACE_GRID_SIZE,
                                        LOCAL_TIME_GRID_SIZE)
 
-grid_operator = GridOperator(space_time_grid, discretization, DGFunction,
-                             local_space_grid_size=LOCAL_SPACE_GRID_SIZE,
-                             local_time_grid_size=LOCAL_TIME_GRID_SIZE)
-
 
 def u_0_function(x, jump=True):
     if jump:
@@ -58,11 +54,13 @@ def u_0_function(x, jump=True):
     return 0.5 * (1.0 + np.cos(2.0 * np.pi * x)) * (0.0 <= x <= 0.5) + 0. * (x > 0.5)
 
 
-u_0 = grid_operator.interpolate(u_0_function)
+grid_operator = GridOperator(space_time_grid, discretization, DGFunction, u_0_function,
+                             local_space_grid_size=LOCAL_SPACE_GRID_SIZE,
+                             local_time_grid_size=LOCAL_TIME_GRID_SIZE)
 
-plot_space_function(u_0, title='Initial condition interpolated to DG space')
+plot_space_function(grid_operator.u_0, title='Initial condition interpolated to DG space')
 
-u = grid_operator.solve(u_0, discretization)
+u = grid_operator.solve()
 
 plot_space_time_function(u, inverse_transformation, title='Spacetime solution')
 
