@@ -4,7 +4,7 @@ from tent_pitching.utils.logger import getLogger
 
 
 class GridOperator:
-    def __init__(self, space_time_grid, discretization, LocalSpaceFunctionType,
+    def __init__(self, space_time_grid, discretization, LocalSpaceFunctionType, u_0,
                  TimeStepperType=ExplicitEuler, local_space_grid_size=1e-1,
                  local_time_grid_size=1e-1):
         self.space_time_grid = space_time_grid
@@ -18,6 +18,9 @@ class GridOperator:
         self.LocalSpaceFunctionType = LocalSpaceFunctionType
         assert discretization.LocalSpaceFunctionType == self.LocalSpaceFunctionType
 
+        self.u_0 = self.interpolate(u_0)
+        assert isinstance(self.u_0, SpaceFunction)
+
         self.time_stepper = TimeStepperType(discretization, self.local_time_grid_size)
 
     def interpolate(self, u):
@@ -26,14 +29,12 @@ class GridOperator:
                                        u=u, local_space_grid_size=self.local_space_grid_size)
         return u_interpolated
 
-    def solve(self, u_0):
-        assert isinstance(u_0, SpaceFunction)
-
+    def solve(self):
         function = SpaceTimeFunction(self.space_time_grid, self.LocalSpaceFunctionType,
                                      local_space_grid_size=self.local_space_grid_size,
                                      local_time_grid_size=self.local_time_grid_size)
 
-        function.set_global_initial_value(u_0)
+        function.set_global_initial_value(self.u_0)
 
         logger = getLogger('tent_pitching.GridOperator')
 

@@ -53,21 +53,19 @@ def main(MU: float = Option(1., help='Parameter mu that determines the velocity.
                                            inverse_transformation, LOCAL_SPACE_GRID_SIZE,
                                            LOCAL_TIME_GRID_SIZE)
 
-    grid_operator = GridOperator(space_time_grid, discretization, DGFunction,
-                                 TimeStepperType=RungeKutta4,
-                                 local_space_grid_size=LOCAL_SPACE_GRID_SIZE,
-                                 local_time_grid_size=LOCAL_TIME_GRID_SIZE)
-
     def u_0_function(x, jump=True):
         if jump:
             return 1. * (x <= 0.25)
         return 0.5 * (1.0 + np.cos(2.0 * np.pi * x)) * (0.0 <= x <= 0.5) + 0. * (x > 0.5)
 
-    u_0 = grid_operator.interpolate(u_0_function)
+    grid_operator = GridOperator(space_time_grid, discretization, DGFunction, u_0_function,
+                                 TimeStepperType=RungeKutta4,
+                                 local_space_grid_size=LOCAL_SPACE_GRID_SIZE,
+                                 local_time_grid_size=LOCAL_TIME_GRID_SIZE)
 
-    plot_space_function(u_0, title='Initial condition interpolated to DG space')
+    plot_space_function(grid_operator.u_0, title='Initial condition interpolated to DG space')
 
-    u = grid_operator.solve(u_0)
+    u = grid_operator.solve()
 
     plot_space_time_function(u, inverse_transformation,
                              title=r"Spacetime solution for $\mu=$" + str(MU),
