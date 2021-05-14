@@ -10,4 +10,5 @@ setup(
     maintainer='Hendrik Kleikamp',
     maintainer_email='hendrik.kleikamp@uni-muenster.de',
     packages=find_packages(),
+    include_package_data=True,
 )
