@@ -10,7 +10,7 @@ def perform_tent_pitching(space_grid, t_max, characteristic_speed, n_max=1000):
     iteration = 0
 
     with logger.block("Creating spacetime grid via tent pitching ..."):
-        while True and iteration < n_max:
+        while iteration < n_max:
             space_time_vertex = space_time_grid.advancing_front.get_feasible_vertex()
             if space_time_vertex is None:
                 break
@@ -21,7 +21,7 @@ def perform_tent_pitching(space_grid, t_max, characteristic_speed, n_max=1000):
 
             iteration += 1
 
-    logger.info("Finished tent pitching...")
+    logger.info(f"Finished tent pitching with {iteration} tents ...")
     logger.info("")
 
     if space_time_grid.advancing_front.get_feasible_vertex() is not None:

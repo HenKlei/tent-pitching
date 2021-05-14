@@ -7,7 +7,7 @@ from tent_pitching.utils.visualization import (plot_space_time_grid, plot_space_
                                                plot_space_time_function)
 from tent_pitching.operators import GridOperator
 from tent_pitching.functions import DGFunction
-from tent_pitching.discretizations import DiscontinuousGalerkin
+from tent_pitching.discretizations import DiscontinuousGalerkin, LaxFriedrichsFlux
 
 
 grid = create_uniform_grid(0.33333333)
@@ -39,9 +39,11 @@ def inverse_transformation(u, phi_2, phi_2_dt, phi_2_dx):
     return 2 * u / (1 + np.sqrt(1 - 2 * u * phi_2_dx))
 
 
-discretization = DiscontinuousGalerkin(burgers_flux, burgers_flux_derivative,
-                                       inverse_transformation, LOCAL_SPACE_GRID_SIZE,
-                                       LOCAL_TIME_GRID_SIZE)
+lambda_ = LOCAL_TIME_GRID_SIZE / LOCAL_SPACE_GRID_SIZE
+numerical_flux = LaxFriedrichsFlux(burgers_flux, burgers_flux_derivative, lambda_)
+
+discretization = DiscontinuousGalerkin(numerical_flux, inverse_transformation,
+                                       LOCAL_SPACE_GRID_SIZE)
 
 
 def u_0_function(x, jumps=False):
