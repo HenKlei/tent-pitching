@@ -1,3 +1,5 @@
+import numpy as np
+
 from tent_pitching.functions import LocalSpaceTimeFunction
 from tent_pitching.utils.logger import getLogger
 
@@ -91,3 +93,19 @@ class SpaceTimeFunction:
             y_vals.append(tmp[2])
 
         return x_vals, t_vals, y_vals
+
+    def sample_function_uniformly(self, transformation, n_x=100, n_t=100):
+        assert n_x > 0 and n_t > 0
+
+        result = np.zeros((n_x, n_t))
+
+        for i, x in enumerate(np.linspace(*self.space_time_grid.space_grid.get_space_bounds(),
+                                          n_x)):
+            for j, t in enumerate(np.linspace(0, self.space_time_grid.t_max, n_t)):
+                point = (x, t)
+                for func in self.function:
+                    if point in func.tent:
+                        result[i, j] = func.get_value_at_point(point, transformation)
+                        break
+
+        return result
