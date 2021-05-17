@@ -66,4 +66,7 @@ u = grid_operator.solve()
 
 plot_space_time_function(u, inverse_transformation, title='Spacetime solution')
 
+u_sampled = u.sample_function_uniformly(inverse_transformation)
+plt.matshow(u_sampled)
+
 plt.show()

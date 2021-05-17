@@ -62,6 +62,7 @@ class LocalSpaceTimeFunction:
     def __init__(self, tent, LocalSpaceFunctionType, local_space_grid_size=1e-1,
                  local_time_grid_size=1e-1):
         self.tent = tent
+        self.local_space_grid_size = local_space_grid_size
         self.local_time_grid_size = local_time_grid_size
 
         self.function = []
@@ -139,3 +140,31 @@ class LocalSpaceTimeFunction:
             tmp_mat.append(np.vstack(element_matrix).transpose())
 
         return np.vstack(tmp_mat)
+
+    def get_value_at_point(self, point, transformation):
+        assert point in self.tent
+
+        x = point[0]
+        t = point[1]
+        t_ref = self.tent.get_inverse_time_transformation(x, t)
+        phi_2 = self.tent.get_time_transformation(x, t_ref)
+        phi_2_dt = self.tent.get_time_transformation_dt(x, t_ref)
+        phi_2_dx = self.tent.get_time_transformation_dx(x, t_ref)
+
+        for element_functions in self.function:
+            element = element_functions[0].element
+            if x in element:
+                if self.tent.get_top_front_value(x) == self.tent.get_bottom_front_value(x):
+                    t_index = 0
+                else:
+                    t_index = int((t - self.tent.get_bottom_front_value(x))
+                                  / (self.tent.get_top_front_value(x)
+                                     - self.tent.get_bottom_front_value(x))
+                                  * int(1. / self.local_time_grid_size))
+                x_index = int((x - element.vertex_left.coordinate)
+                              / (element.vertex_right.coordinate - element.vertex_left.coordinate)
+                              * (int(1. / self.local_space_grid_size) - 1))
+                val = transformation(element_functions[t_index].function[x_index],
+                                     phi_2, phi_2_dt, phi_2_dx)
+                return val
+        raise ValueError

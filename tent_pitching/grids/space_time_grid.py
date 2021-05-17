@@ -37,6 +37,14 @@ class SpaceTimeTent:
                     f"{self.bottom_space_time_vertex.space_vertex}")
         return f"Tent without number pitched above of {self.bottom_space_time_vertex.space_vertex}"
 
+    def __contains__(self, point):
+        x = point[0]
+        t = point[1]
+        if (x in self.get_space_patch()
+           and self.get_bottom_front_value(x) <= t <= self.get_top_front_value(x)):
+            return True
+        return False
+
     def has_initial_boundary(self):
         if sum(vertex.time == 0.0 for vertex in self.space_time_vertices) >= 2:
             assert self.bottom_space_time_vertex.time == 0.0
@@ -151,6 +159,13 @@ class SpaceTimeTent:
     def get_time_transformation_dt(self, x, t_ref):
         # phi_2_dt
         return -self.get_bottom_front_value(x) + self.get_top_front_value(x)
+
+    def get_inverse_time_transformation(self, x, t):
+        # phi_2^{-1}
+        if self.get_bottom_front_value(x) == self.get_top_front_value(x):
+            return 0.
+        return ((t - self.get_bottom_front_value(x))
+                / (self.get_top_front_value(x) - self.get_bottom_front_value(x)))
 
 
 class AdvancingFront:

@@ -65,11 +65,12 @@ class Element:
         return self.vertex_left.coordinate <= x <= self.vertex_right.coordinate
 
     def get_vertices(self):
-        return [self.vertex_left, self.vertex_right,]
+        return [self.vertex_left, self.vertex_right, ]
 
     def get_maximum_speed(self, characteristic_speed):
         # Do something more elaborate here!
-        return characteristic_speed(self.get_vertices()[0].coordinate)
+        return max(characteristic_speed(self.get_vertices()[0].coordinate),
+                   characteristic_speed(self.get_vertices()[1].coordinate))
 
 
 class Grid:
@@ -77,7 +78,7 @@ class Grid:
         assert len(elements) > 0
         self.elements = elements
 
-        self.shape_regularity_constant = 1. # compute a reasonable value here!
+        self.shape_regularity_constant = 1.  # compute a reasonable value here!
 
         for vertex in self.get_vertices():
             vertex.init_patch()
@@ -90,6 +91,17 @@ class Grid:
         # If we change back to sets, use this instead:
         # return list(set([vertex for element in self.elements
         #                  for vertex in element.get_vertices()]))
+
+    def get_space_bounds(self):
+        min_coordinate = None
+        max_coordinate = None
+
+        for vertex in self.get_vertices():
+            if min_coordinate is None or vertex.coordinate < min_coordinate:
+                min_coordinate = vertex.coordinate
+            if max_coordinate is None or vertex.coordinate > max_coordinate:
+                max_coordinate = vertex.coordinate
+        return min_coordinate, max_coordinate
 
 
 def create_uniform_grid(global_space_grid_size, left=0., right=1.):
