@@ -1,6 +1,11 @@
 from setuptools import setup, find_packages
 
 
+dependencies = [
+    'numpy',
+    'scipy',
+]
+
 setup(
     name='tent-pitching',
     version='0.1.0',
@@ -11,4 +16,5 @@ setup(
     maintainer_email='hendrik.kleikamp@uni-muenster.de',
     packages=find_packages(),
     include_package_data=True,
+    install_requires=dependencies,
 )
