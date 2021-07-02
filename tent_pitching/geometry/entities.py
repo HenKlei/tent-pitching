@@ -1,5 +1,7 @@
 import numpy as np
 
+from tent_pitching.geometry.quadrature import gauss_quadrature
+
 
 class Triangle:
     def __init__(self, vertices):
@@ -27,3 +29,22 @@ class Triangle:
         elif order == 1:
             return ([np.array([0., 0.]), np.array([1., 0.]), np.array([0., 1.])],
                     [1./3., 1./3., 1./3.])
+
+
+class Quadrilateral:
+    def __init__(self, vertices):
+        assert len(vertices) == 4
+        self.vertices = vertices
+
+    def quadrature(self, order):
+        points = []
+        weights = []
+
+        points_1d, weights_1d = gauss_quadrature(order)
+
+        for p_1, w_1 in zip(points_1d, weights_1d):
+            for p_2, w_2 in zip(points_1d, weights_1d):
+                points.append(np.concatenate((p_1, p_2), axis=None))
+                weights.append(w_1 * w_2)
+
+        return points, weights
