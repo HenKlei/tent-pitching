@@ -19,3 +19,11 @@ class Triangle:
     def to_local(self, x):
         assert x.shape == (2,)
         return self.A_inv.dot(x) - self.A_inv.dot(self.b)
+
+    def quadrature(self, order):
+        assert order in (0, 1)
+        if order == 0:
+            return [np.array([1./3., 1./3.])], [1.]
+        elif order == 1:
+            return ([np.array([0., 0.]), np.array([1., 0.]), np.array([0., 1.])],
+                    [1./3., 1./3., 1./3.])
