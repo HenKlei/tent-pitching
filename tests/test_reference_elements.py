@@ -20,22 +20,22 @@ def test_triangle_quadrature():
     points, weights = t.quadrature(0)
 
     for b in np.random.rand(N):
-        def func_to_integrate(x):
+        def function_to_integrate(x):
             return b
 
         exact_result = b / 2.
-        integral = t.volume * sum([func_to_integrate(x) * w for x, w in zip(points, weights)])
+        integral = t.volume * sum([function_to_integrate(x) * w for x, w in zip(points, weights)])
         assert np.linalg.norm(exact_result - integral) < 1e-8
 
     # Quadrature of order 1
     points, weights = t.quadrature(1)
 
     for b, a_1, a_2 in zip(np.random.rand(N), np.random.rand(N), np.random.rand(N)):
-        def func_to_integrate(x):
+        def function_to_integrate(x):
             return b + a_1 * x[0] + a_2 * x[1]
 
         exact_result = b / 2. + a_1 / 6. + a_2 / 6.
-        integral = t.volume * sum([func_to_integrate(x) * w for x, w in zip(points, weights)])
+        integral = t.volume * sum([function_to_integrate(x) * w for x, w in zip(points, weights)])
         assert np.linalg.norm(exact_result - integral) < 1e-8
 
 
