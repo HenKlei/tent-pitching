@@ -7,7 +7,8 @@ class SpaceTimeVertex:
         self.time = time
         self.potential_tent_height = 0.
 
-        self.coordinates = [self.space_vertex.coordinate, self.time, ]
+        self.coordinates = np.concatenate((self.space_vertex.coordinate, np.array([self.time, ])),
+                                          axis=None)
 
         self.tent_below = None
 
