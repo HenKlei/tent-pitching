@@ -35,6 +35,30 @@ class Quadrilateral:
     def __init__(self, vertices):
         assert len(vertices) == 4
         self.vertices = vertices
+        self.A = np.array([self.vertices[1]-self.vertices[0], self.vertices[2]-self.vertices[0]]).T
+        self.b = self.vertices[0]
+
+    def to_global(self, x_hat):
+        assert x_hat.shape == (2,)
+        assert 0. <= x_hat[0] <= 1. and 0. <= x_hat[1] <= 1.
+        return self.A.dot(x_hat) + self.b + x_hat[0] * x_hat[1] * (self.vertices[3]
+                                                                   + self.vertices[0]
+                                                                   - self.vertices[1]
+                                                                   - self.vertices[2])
+
+    def to_local(self, x):
+        a_1 = self.vertices[0]
+        a_2 = self.vertices[1] - self.vertices[0]
+        a_3 = self.vertices[2] - self.vertices[0]
+        a_4 = self.vertices[3] + self.vertices[0] - self.vertices[1] - self.vertices[2]
+        p = (1. / (a_4[0] * a_3[1] - a_3[0] * a_4[1])) * (a_2[0] * a_3[1] + a_4[1] * x[0]
+                                                          - a_1[0] * a_4[1] - a_2[1] * a_3[0]
+                                                          + a_1[1] * a_4[0] - a_4[0] * x[1])
+        q = (1. / (a_4[0] * a_3[1] - a_3[0] * a_4[1])) * (a_2[1] * x[0] - a_2[1] * a_1[0]
+                                                          + a_1[1] * a_2[0] - a_2[0] * x[1])
+        x_hat_2 = -p / 2. - np.sqrt((p / 2.)**2 - q)
+        x_hat_1 = (1. / (a_2[0] + a_4[0] * x_hat_2)) * (x[0] - a_1[0] - a_3[0] * x_hat_2)
+        return np.array([x_hat_1, x_hat_2])
 
     def quadrature(self, order):
         points = []

@@ -39,6 +39,13 @@ def test_triangle_quadrature():
         assert np.abs(exact_result - integral) < 1e-8
 
 
+def test_quadrilateral_mappings():
+    vertices = (np.array([1., 1.]), np.array([2., 2.]), np.array([0., 2.]), np.array([-1., 1.]))
+    q = Quadrilateral(vertices)
+    assert np.linalg.norm(q.to_global(np.array([0.25, 0.25])) - np.array([.875, 1.375])) < 1e-8
+    assert np.linalg.norm(q.to_local(np.array([.875, 1.375])) - np.array([0.25, 0.25])) < 1e-8
+
+
 def test_quadrilateral_quadrature():
     vertices = (np.array([0., 0.]), np.array([1., 0.]), np.array([1., 1.]), np.array([0., 1.]))
     q = Quadrilateral(vertices)
@@ -70,4 +77,5 @@ def test_quadrilateral_quadrature():
 test_triangle_mappings()
 test_triangle_quadrature()
 
+test_quadrilateral_mappings()
 test_quadrilateral_quadrature()
