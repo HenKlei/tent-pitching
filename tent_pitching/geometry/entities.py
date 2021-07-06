@@ -41,6 +41,10 @@ class Triangle:
         self.b = self.vertices[0]
         self.volume = 0.5 * np.abs(np.linalg.det(self.A))
 
+        self.faces = [Line([self.vertices[0], self.vertices[1]]),
+                      Line([self.vertices[1], self.vertices[2]]),
+                      Line([self.vertices[2], self.vertices[0]])]
+
     def to_global(self, x_hat):
         assert x_hat.shape == (2,)
         assert 0. <= x_hat[0] <= 1. and 0. <= x_hat[1] <= 1.
@@ -80,6 +84,11 @@ class Quadrilateral:
                              - self.vertices[2][0] * self.vertices[1][1]
                              - self.vertices[3][0] * self.vertices[2][1]
                              - self.vertices[0][0] * self.vertices[3][1])
+
+        self.faces = [Line([self.vertices[0], self.vertices[1]]),
+                      Line([self.vertices[1], self.vertices[2]]),
+                      Line([self.vertices[2], self.vertices[3]]),
+                      Line([self.vertices[3], self.vertices[0]])]
 
     def to_global(self, x_hat):
         assert x_hat.shape == (2,)

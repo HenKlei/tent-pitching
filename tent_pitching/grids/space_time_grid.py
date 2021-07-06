@@ -1,5 +1,7 @@
 import numpy as np
 
+from tent_pitching.geometry.entities import Triangle, Quadrilateral
+
 
 class SpaceTimeVertex:
     def __init__(self, space_vertex, time):
@@ -28,9 +30,59 @@ class SpaceTimeTent:
         self.neighboring_tents_below = []
 
         self.space_time_vertices = space_time_vertices
-        assert len(self.space_time_vertices) <= 4
+        assert 3 <= len(self.space_time_vertices) <= 4
 
         self.number = number
+
+        def is_left(p, q, r):
+            p = p.coordinates
+            q = q.coordinates
+            r = r.coordinates
+            return q[0]*r[1]+p[0]*q[1]+p[1]*r[0]-q[0]*p[1]-r[0]*q[1]-r[1]*p[0] >= -1e-10
+
+        if len(self.space_time_vertices) == 3:
+            stv = self.space_time_vertices
+            if not is_left(stv[0], stv[1], stv[2]):
+                tmp_2 = stv[2]
+                stv[2] = stv[1]
+                stv[1] = tmp_2
+
+            self.element = Triangle([v.coordinates for v in stv])
+        elif len(self.space_time_vertices) == 4:
+            stv = self.space_time_vertices
+            if is_left(stv[0], stv[1], stv[2]) and is_left(stv[0], stv[1], stv[3]):
+                if not is_left(stv[1], stv[2], stv[3]):
+                    tmp_2 = stv[2]
+                    stv[2] = stv[3]
+                    stv[3] = tmp_2
+            elif is_left(stv[0], stv[1], stv[2]):
+                tmp_1 = stv[1]
+                tmp_2 = stv[2]
+                stv[1] = stv[3]
+                stv[2] = tmp_1
+                stv[3] = tmp_2
+            elif is_left(stv[0], stv[1], stv[3]):
+                tmp_1 = stv[1]
+                stv[1] = stv[2]
+                stv[2] = tmp_1
+            elif is_left(stv[0], stv[3], stv[2]):
+                tmp_1 = stv[1]
+                stv[1] = stv[3]
+                stv[3] = tmp_1
+            else:
+                tmp_1 = stv[1]
+                tmp_2 = stv[2]
+                stv[2] = stv[3]
+                stv[1] = tmp_2
+                stv[3] = tmp_1
+
+            assert (is_left(stv[0], stv[1], stv[2]) and is_left(stv[0], stv[1], stv[3])
+                    and is_left(stv[1], stv[2], stv[3]) and is_left(stv[1], stv[2], stv[0])
+                    and is_left(stv[2], stv[3], stv[0]) and is_left(stv[2], stv[3], stv[1])
+                    and is_left(stv[3], stv[0], stv[1]) and is_left(stv[3], stv[0], stv[2]))
+
+            self.element = Quadrilateral([v.coordinates for v in stv])
+            self.space_time_vertices = stv
 
     def __str__(self):
         if self.number is not None:
