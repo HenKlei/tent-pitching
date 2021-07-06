@@ -3,6 +3,35 @@ import numpy as np
 from tent_pitching.geometry.quadrature import gauss_quadrature
 
 
+class Line:
+    def __init__(self, vertices):
+        assert len(vertices) == 2
+        self.vertices = vertices
+        self.A = np.array([self.vertices[1]-self.vertices[0], [0, 0]]).T
+        self.b = self.vertices[0]
+        self.volume = np.linalg.norm(self.vertices[1]-self.vertices[0])
+
+    def to_global(self, x_hat):
+        assert x_hat.shape == (2,)
+        assert 0. <= x_hat[0] <= 1. and x_hat[1] == 0.
+        return self.A.dot(x_hat) + self.b
+
+    def derivative_to_global(self, x_hat):
+        return self.A.T
+
+    def to_local(self, x):
+        assert x.shape == (2,)
+        x_transformed = x - self.b
+        divided = np.divide(x_transformed, self.A.T[0])
+        assert np.all(divided == divided[0])
+        return np.array([divided[0], 0.])
+
+    def quadrature(self, order):
+        points_1d, weights = gauss_quadrature(order)
+        points = [np.array([x, 0.]) for x in points_1d]
+        return points, weights
+
+
 class Triangle:
     def __init__(self, vertices):
         assert len(vertices) == 3
