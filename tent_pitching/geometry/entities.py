@@ -11,6 +11,14 @@ class Line:
         self.b = self.vertices[0]
         self.volume = np.linalg.norm(self.vertices[1]-self.vertices[0])
 
+    def __contains__(self, x):
+        assert x.shape == (2,)
+        x_transformed = x - self.b
+        divided = np.divide(x_transformed, self.A.T[0], where=(self.A.T[0] != 0))
+        e = divided[(divided != 0).argmax()]
+        return (np.all(divided == e, where=(self.A.T[0] != 0))
+                and np.all(x_transformed == 0, where=(self.A.T[0] == 0)))
+
     def to_global(self, x_hat):
         assert x_hat.shape == (2,)
         assert 0. <= x_hat[0] <= 1. and x_hat[1] == 0.
@@ -20,16 +28,20 @@ class Line:
         return self.A.T
 
     def to_local(self, x):
-        assert x.shape == (2,)
+        assert x in self
         x_transformed = x - self.b
-        divided = np.divide(x_transformed, self.A.T[0])
-        assert np.all(divided == divided[0])
-        return np.array([divided[0], 0.])
+        divided = np.divide(x_transformed, self.A.T[0], where=(self.A.T[0] != 0))
+        return np.array([divided[(divided != 0).argmax()], 0.])
 
     def quadrature(self, order):
         points_1d, weights = gauss_quadrature(order)
         points = [np.array([x, 0.]) for x in points_1d]
         return points, weights
+
+    def outer_unit_normal(self):
+        direction = self.vertices[1] - self.vertices[0]
+        orthogonal_vector = np.array([direction[1], -direction[0]])
+        return orthogonal_vector / np.linalg.norm(orthogonal_vector)
 
 
 class Triangle:
@@ -68,6 +80,12 @@ class Triangle:
         elif order == 1:
             return ([np.array([0., 0.]), np.array([1., 0.]), np.array([0., 1.])],
                     [1./3., 1./3., 1./3.])
+
+    def outer_unit_normal(self, x):
+        for face in self.faces:
+            if x in face:
+                return face.outer_unit_normal()
+        raise ValueError
 
 
 class Quadrilateral:

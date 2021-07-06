@@ -16,6 +16,7 @@ def test_line_mappings():
     assert np.linalg.norm(line.to_global(np.array([0.75, 0.])) - np.array([2.5, 1.75])) < EPS
     assert np.linalg.norm(line.to_local(np.array([2.5, 1.75])) - np.array([0.75, 0.])) < EPS
     assert np.abs(line.volume - np.sqrt(5.)) < EPS
+    assert np.linalg.norm(line.outer_unit_normal() - np.array([1, -2]) / np.sqrt(5.)) < EPS
 
 
 def test_line_quadrature():
@@ -57,6 +58,7 @@ def test_triangle_mappings():
     assert np.linalg.norm(triangle.to_global(np.array([0.25, 0.25])) - np.array([1., 1.5])) < EPS
     assert np.linalg.norm(triangle.to_local(np.array([1., 1.5])) - np.array([0.25, 0.25])) < EPS
     assert np.abs(triangle.volume - 1.) < EPS
+    assert np.linalg.norm(triangle.outer_unit_normal(np.array([1., 2.])) - np.array([0., 1.])) < EPS
 
 
 def test_triangle_quadrature():
