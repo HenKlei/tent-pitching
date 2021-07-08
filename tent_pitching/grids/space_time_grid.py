@@ -1,6 +1,6 @@
 import numpy as np
 
-from tent_pitching.geometry.entities import Triangle, Quadrilateral
+from tent_pitching.geometry.reference_elements import Triangle, Quadrilateral
 
 
 class SpaceTimeVertex:

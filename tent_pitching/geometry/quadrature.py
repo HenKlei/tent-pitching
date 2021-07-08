@@ -11,4 +11,4 @@ weights = [[2.], [1., 1.], [8./9., 5./9., 5./9.],
 
 def gauss_quadrature(order=2):
     assert 0 <= order <= 3
-    return [0.5 + 0.5 * p for p in points[order]], [0.5 * w for w in weights[order]]
+    return [np.array([0.5 + 0.5 * p]) for p in points[order]], [0.5 * w for w in weights[order]]
