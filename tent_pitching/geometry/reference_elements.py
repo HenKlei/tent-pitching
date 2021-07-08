@@ -132,12 +132,10 @@ class Triangle(Entity):
         seen_add = seen.add
         vertices = [s for line in lines for s in line.subentities if not (s in seen or seen_add(s))]
         assert len(vertices) == 3
-        """
-        if not is_left(vertices[0], vertices[1], vertices[2]):
-            tmp_2 = vertices[2]
-            vertices[2] = vertices[1]
-            vertices[1] = tmp_2
-        """
+        assert (is_left(vertices[0], vertices[1], vertices[2])
+                and is_left(vertices[1], vertices[2], vertices[0])
+                and is_left(vertices[2], vertices[0], vertices[1]))
+
         self.A = np.array([vertices[1].coordinates-vertices[0].coordinates,
                            vertices[2].coordinates-vertices[0].coordinates]).T
         self.A_inv = np.linalg.inv(self.A)
@@ -188,34 +186,6 @@ class Quadrilateral(Entity):
         seen_add = seen.add
         vertices = [s for line in lines for s in line.subentities if not (s in seen or seen_add(s))]
         assert len(vertices) == 4
-        """
-        if (is_left(vertices[0], vertices[1], vertices[2])
-           and is_left(vertices[0], vertices[1], vertices[3])):
-            if not is_left(vertices[1], vertices[2], vertices[3]):
-                tmp_2 = vertices[2]
-                vertices[2] = vertices[3]
-                vertices[3] = tmp_2
-        elif is_left(vertices[0], vertices[1], vertices[2]):
-            tmp_1 = vertices[1]
-            tmp_2 = vertices[2]
-            vertices[1] = vertices[3]
-            vertices[2] = tmp_1
-            vertices[3] = tmp_2
-        elif is_left(vertices[0], vertices[1], vertices[3]):
-            tmp_1 = vertices[1]
-            vertices[1] = vertices[2]
-            vertices[2] = tmp_1
-        elif is_left(vertices[0], vertices[3], vertices[2]):
-            tmp_1 = vertices[1]
-            vertices[1] = vertices[3]
-            vertices[3] = tmp_1
-        else:
-            tmp_1 = vertices[1]
-            tmp_2 = vertices[2]
-            vertices[2] = vertices[3]
-            vertices[1] = tmp_2
-            vertices[3] = tmp_1
-        """
         assert (is_left(vertices[0], vertices[1], vertices[2])
                 and is_left(vertices[0], vertices[1], vertices[3])
                 and is_left(vertices[1], vertices[2], vertices[3])

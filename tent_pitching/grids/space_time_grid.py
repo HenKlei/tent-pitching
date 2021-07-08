@@ -1,6 +1,6 @@
 import numpy as np
 
-from tent_pitching.geometry.reference_elements import Triangle, Quadrilateral
+from tent_pitching.geometry.reference_elements import Vertex, Line, Triangle, Quadrilateral
 
 
 class SpaceTimeVertex:
@@ -34,55 +34,38 @@ class SpaceTimeTent:
 
         self.number = number
 
-        def is_left(p, q, r):
-            p = p.coordinates
-            q = q.coordinates
-            r = r.coordinates
-            return q[0]*r[1]+p[0]*q[1]+p[1]*r[0]-q[0]*p[1]-r[0]*q[1]-r[1]*p[0] >= -1e-10
-
         if len(self.space_time_vertices) == 3:
-            stv = self.space_time_vertices
-            if not is_left(stv[0], stv[1], stv[2]):
-                tmp_2 = stv[2]
-                stv[2] = stv[1]
-                stv[1] = tmp_2
-
-            self.element = Triangle([v.coordinates for v in stv])
+            vertices = [Vertex(self.bottom_space_time_vertex.coordinates), None, None]
+            lines = [None, None, None]
+            for v in self.space_time_vertices:
+                if (v.space_vertex.coordinate >
+                   self.bottom_space_time_vertex.space_vertex.coordinate):
+                    vertices[1] = Vertex(v.coordinates)
+                    vertices[2] = Vertex(self.top_space_time_vertex.coordinates)
+                elif (v.space_vertex.coordinate <
+                      self.bottom_space_time_vertex.space_vertex.coordinate):
+                    vertices[1] = Vertex(self.top_space_time_vertex.coordinates)
+                    vertices[2] = Vertex(v.coordinates)
+            lines[0] = Line([vertices[0], vertices[1]])
+            lines[1] = Line([vertices[1], vertices[2]])
+            lines[2] = Line([vertices[2], vertices[0]])
+            self.element = Triangle(lines)
         elif len(self.space_time_vertices) == 4:
-            stv = self.space_time_vertices
-            if is_left(stv[0], stv[1], stv[2]) and is_left(stv[0], stv[1], stv[3]):
-                if not is_left(stv[1], stv[2], stv[3]):
-                    tmp_2 = stv[2]
-                    stv[2] = stv[3]
-                    stv[3] = tmp_2
-            elif is_left(stv[0], stv[1], stv[2]):
-                tmp_1 = stv[1]
-                tmp_2 = stv[2]
-                stv[1] = stv[3]
-                stv[2] = tmp_1
-                stv[3] = tmp_2
-            elif is_left(stv[0], stv[1], stv[3]):
-                tmp_1 = stv[1]
-                stv[1] = stv[2]
-                stv[2] = tmp_1
-            elif is_left(stv[0], stv[3], stv[2]):
-                tmp_1 = stv[1]
-                stv[1] = stv[3]
-                stv[3] = tmp_1
-            else:
-                tmp_1 = stv[1]
-                tmp_2 = stv[2]
-                stv[2] = stv[3]
-                stv[1] = tmp_2
-                stv[3] = tmp_1
-
-            assert (is_left(stv[0], stv[1], stv[2]) and is_left(stv[0], stv[1], stv[3])
-                    and is_left(stv[1], stv[2], stv[3]) and is_left(stv[1], stv[2], stv[0])
-                    and is_left(stv[2], stv[3], stv[0]) and is_left(stv[2], stv[3], stv[1])
-                    and is_left(stv[3], stv[0], stv[1]) and is_left(stv[3], stv[0], stv[2]))
-
-            self.element = Quadrilateral([v.coordinates for v in stv])
-            self.space_time_vertices = stv
+            vertices = [Vertex(self.bottom_space_time_vertex.coordinates), None,
+                        Vertex(self.top_space_time_vertex.coordinates), None]
+            lines = [None, None, None, None]
+            for v in self.space_time_vertices:
+                if (v.space_vertex.coordinate >
+                   self.bottom_space_time_vertex.space_vertex.coordinate):
+                    vertices[1] = Vertex(v.coordinates)
+                elif (v.space_vertex.coordinate <
+                      self.bottom_space_time_vertex.space_vertex.coordinate):
+                    vertices[3] = Vertex(v.coordinates)
+            lines[0] = Line([vertices[0], vertices[1]])
+            lines[1] = Line([vertices[1], vertices[2]])
+            lines[2] = Line([vertices[2], vertices[3]])
+            lines[3] = Line([vertices[3], vertices[0]])
+            self.element = Quadrilateral(lines)
 
     def __str__(self):
         if self.number is not None:

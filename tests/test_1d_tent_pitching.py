@@ -28,3 +28,6 @@ def test_1d_tent_pitching():
     print(space_time_grid.tents[i].get_bottom_front_derivative(pos))
     print(space_time_grid.tents[i].get_top_front_value(pos))
     print(space_time_grid.tents[i].get_top_front_derivative(pos))
+
+
+test_1d_tent_pitching()
