@@ -7,10 +7,10 @@ from tent_pitching.operators import GridOperator
 from tent_pitching.utils.visualization import plot_space_time_grid, plot_space_time_function
 
 
-GLOBAL_SPACE_GRID_SIZE = 1./3.
+GLOBAL_SPACE_GRID_SIZE = 1./20.
 grid = create_uniform_grid(GLOBAL_SPACE_GRID_SIZE)
 T_MAX = 1.
-MU = 1.
+MU = 2.
 EPS = 1.
 
 
@@ -28,6 +28,10 @@ def burgers_flux(u):
     return np.array([0.5 * MU * u * u, ])
 
 
+def burgers_flux_derivative(u):
+    return np.array([MU * u, ])
+
+
 def u_0_function(x, jumps=False):
     if jumps:
         return 1. * (x <= 0.4)
@@ -38,7 +42,7 @@ def inflow_boundary_values(x):
     return 1.
 
 
-grid_operator = GridOperator(space_time_grid, burgers_flux,
+grid_operator = GridOperator(space_time_grid, burgers_flux, burgers_flux_derivative,
                              u_0_function, inflow_boundary_values)
 
 u = grid_operator.solve()

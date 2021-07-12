@@ -30,6 +30,21 @@ def test_quadrilateral():
     assert np.linalg.norm(func.gradient(np.array([0., 1.25])) - np.array([1., -1.])) < EPS
 
 
+def test_constant_function():
+    vertices = [Vertex(np.array([1., 1.])), Vertex(np.array([2., 2.])),
+                Vertex(np.array([0., 2.])), Vertex(np.array([-1., 1.]))]
+    lines = [Line([vertices[0], vertices[1]]), Line([vertices[1], vertices[2]]),
+             Line([vertices[2], vertices[3]]), Line([vertices[3], vertices[0]])]
+    q = Quadrilateral(lines)
+    local_values = np.array([2., 2., 2.])
+    func = P1DGLocalFunction(q, local_values=local_values)
+    for x in np.linspace(0., 1., 100):
+        for y in np.linspace(0., 1., 100):
+            assert np.abs(func(q.to_global(np.array([x, y]))) - 2.) < EPS
+
+
 test_triangle()
 
 test_quadrilateral()
+
+test_constant_function()

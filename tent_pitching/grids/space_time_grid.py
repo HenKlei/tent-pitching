@@ -82,13 +82,23 @@ class SpaceTimeTent:
                       self.bottom_space_time_vertex.space_vertex.coordinate):
                     vertices[3] = Vertex(v.coordinates)
                     left_vertex = v
-            lines[0] = Line([vertices[0], vertices[1]], inside=self,
-                            outside=right_vertex.tent_below, inflow=True)
-            lines[1] = Line([vertices[1], vertices[2]], inside=self)
-            lines[2] = Line([vertices[2], vertices[3]], inside=self)
-            lines[3] = Line([vertices[3], vertices[0]], inside=self,
-                            outside=left_vertex.tent_below, inflow=True)
-            self.element = Quadrilateral(lines)
+            if (np.isclose(vertices[1].coordinates[1], vertices[2].coordinates[1])
+               and np.isclose(vertices[2].coordinates[1], vertices[3].coordinates[1])):
+                lines[0] = Line([vertices[0], vertices[1]], inside=self,
+                                outside=right_vertex.tent_below, inflow=True)
+                lines[1] = Line([vertices[1], vertices[3]], inside=self)
+                lines[2] = Line([vertices[3], vertices[0]], inside=self,
+                                outside=left_vertex.tent_below, inflow=True)
+                lines = lines[:-1]
+                self.element = Triangle(lines)
+            else:
+                lines[0] = Line([vertices[0], vertices[1]], inside=self,
+                                outside=right_vertex.tent_below, inflow=True)
+                lines[1] = Line([vertices[1], vertices[2]], inside=self)
+                lines[2] = Line([vertices[2], vertices[3]], inside=self)
+                lines[3] = Line([vertices[3], vertices[0]], inside=self,
+                                outside=left_vertex.tent_below, inflow=True)
+                self.element = Quadrilateral(lines)
 
     def __str__(self):
         if self.number is not None:

@@ -28,6 +28,10 @@ def linear_transport_flux(u):
     return np.array([MU * u, ])
 
 
+def linear_transport_flux_derivative(u):
+    return np.array([MU, ])
+
+
 def u_0_function(x, jumps=True):
     if jumps:
         return 1. * (x <= 0.4)
@@ -39,6 +43,7 @@ def inflow_boundary_values(x):
 
 
 grid_operator = GridOperator(space_time_grid, linear_transport_flux,
+                             linear_transport_flux_derivative,
                              u_0_function, inflow_boundary_values)
 
 u = grid_operator.solve()
