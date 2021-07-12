@@ -1,7 +1,7 @@
 import numpy as np
 
 from tent_pitching.geometry.quadrature import gauss_quadrature
-from tent_pitching.utils.helper_functions import flatten, is_left
+from tent_pitching.utils.helper_functions import flatten, is_left, remove_duplicates
 
 
 class Entity:
@@ -11,7 +11,13 @@ class Entity:
             return self
         elif codim == 1:
             return self.subentities
-        return flatten([s.get_subentities(codim=codim-1) for s in self.subentities])
+        return remove_duplicates(flatten([s.get_subentities(codim=codim-1)
+                                          for s in self.subentities]))
+
+    def __str__(self):
+        return (self.__class__.__name__ + '('
+                + (', '.join([str(subentity) for subentity in self.get_subentities(codim=1)]))
+                + ')')
 
     def to_global(self, x_hat):
         raise NotImplementedError
@@ -47,6 +53,9 @@ class Vertex(Entity):
     def __containes__(self, x):
         return x == self.coordinates
 
+    def __str__(self):
+        return f"Vertex({self.coordinates})"
+
     def to_global(self, x_hat):
         assert x_hat == np.zeros(self.world_dim)
         return self.coordinates
@@ -61,7 +70,7 @@ class Vertex(Entity):
     def derivative_to_local(self, x):
         raise NotImplementedError
 
-    def quadrature(self, order):
+    def quadrature(self, order=1):
         raise NotImplementedError
 
     def center(self):
@@ -72,7 +81,7 @@ class Vertex(Entity):
 
 
 class Line(Entity):
-    def __init__(self, vertices, inside=None, outside=None):
+    def __init__(self, vertices, inside=None, outside=None, inflow=False):
         assert len(vertices) == 2
         assert all(isinstance(vertex, Vertex) for vertex in vertices)
         self.dim = 1
@@ -83,6 +92,7 @@ class Line(Entity):
         self.b = self.subentities[0].coordinates
         self.inside = inside
         self.outside = outside
+        self.inflow = inflow
 
     def __contains__(self, x):
         assert x.shape == (self.world_dim,)
@@ -109,7 +119,7 @@ class Line(Entity):
     def derivative_to_local(self, x):
         raise NotImplementedError
 
-    def quadrature(self, order):
+    def quadrature(self, order=3):
         return gauss_quadrature(order)
 
     def outer_unit_normal(self):
@@ -148,21 +158,30 @@ class Triangle(Entity):
 
     def to_global(self, x_hat):
         assert x_hat.shape == (2,)
-        assert 0. <= x_hat[0] <= 1. and 0. <= x_hat[1] <= 1.
-        assert x_hat[0] + x_hat[1] <= 1.
+        assert 0. <= x_hat[0] <= 1. or np.isclose(x_hat[0], 0.) or np.isclose(x_hat[0], 1.)
+        assert 0. <= x_hat[1] <= 1. or np.isclose(x_hat[1], 0.) or np.isclose(x_hat[1], 1.)
+        assert x_hat[0] + x_hat[1] <= 1. or np.isclose(x_hat[0] + x_hat[1], 1.)
         return self.A.dot(x_hat) + self.b
 
     def derivative_to_global(self, x_hat):
+        assert x_hat.shape == (2,)
+        assert 0. <= x_hat[0] <= 1. or np.isclose(x_hat[0], 0.) or np.isclose(x_hat[0], 1.)
+        assert 0. <= x_hat[1] <= 1. or np.isclose(x_hat[1], 0.) or np.isclose(x_hat[1], 1.)
+        assert x_hat[0] + x_hat[1] <= 1. or np.isclose(x_hat[0] + x_hat[1], 1.)
         return self.A.T
 
     def to_local(self, x):
         assert x.shape == (2,)
-        return self.A_inv.dot(x) - self.A_inv.dot(self.b)
+        x_hat = self.A_inv.dot(x) - self.A_inv.dot(self.b)
+        assert 0. <= x_hat[0] <= 1. or np.isclose(x_hat[0], 0.) or np.isclose(x_hat[1], 0.)
+        assert 0. <= x_hat[1] <= 1. or np.isclose(x_hat[0], 0.) or np.isclose(x_hat[1], 0.)
+        assert x_hat[0] + x_hat[1] <= 1. or np.isclose(x_hat[0] + x_hat[1], 1.)
+        return x_hat
 
     def derivative_to_local(self, x):
         return np.linalg.inv(self.derivative_to_global(self.to_local(x)))
 
-    def quadrature(self, order):
+    def quadrature(self, order=1):
         assert order in (0, 1)
         if order == 0:
             return [np.array([1./3., 1./3.] + [0, ] * self.codim)], [1.]
@@ -208,13 +227,17 @@ class Quadrilateral(Entity):
 
     def to_global(self, x_hat):
         assert x_hat.shape == (2,)
-        assert 0. <= x_hat[0] <= 1. and 0. <= x_hat[1] <= 1.
+        assert 0. <= x_hat[0] <= 1. or np.isclose(x_hat[0], 0.) or np.isclose(x_hat[0], 1.)
+        assert 0. <= x_hat[1] <= 1. or np.isclose(x_hat[1], 0.) or np.isclose(x_hat[1], 1.)
         return self.A.dot(x_hat) + self.b + x_hat[0] * x_hat[1] * (self.vertices[2].coordinates
                                                                    + self.vertices[0].coordinates
                                                                    - self.vertices[1].coordinates
                                                                    - self.vertices[3].coordinates)
 
     def derivative_to_global(self, x_hat):
+        assert x_hat.shape == (2,)
+        assert 0. <= x_hat[0] <= 1. or np.isclose(x_hat[0], 0.) or np.isclose(x_hat[0], 1.)
+        assert 0. <= x_hat[1] <= 1. or np.isclose(x_hat[1], 0.) or np.isclose(x_hat[1], 1.)
         return self.A.T + np.array([x_hat[1] * (self.vertices[2].coordinates
                                                 + self.vertices[0].coordinates
                                                 - self.vertices[1].coordinates
@@ -231,7 +254,7 @@ class Quadrilateral(Entity):
         a_4 = (self.vertices[2].coordinates + self.vertices[0].coordinates
                - self.vertices[1].coordinates - self.vertices[3].coordinates)
 
-        if a_4[0] * a_3[1] - a_3[0] * a_4[1] == 0.:  # transformation is linear!
+        if np.isclose(a_4[0] * a_3[1] - a_3[0] * a_4[1], 0.):  # transformation is linear!
             p = (a_2[0] * a_3[1] + a_4[1] * x[0] - a_1[0] * a_4[1] - a_2[1] * a_3[0]
                  + a_1[1] * a_4[0] - a_4[0] * x[1])
             q = (a_2[1] * x[0] - a_2[1] * a_1[0] + a_1[1] * a_2[0] - a_2[0] * x[1])
@@ -246,12 +269,14 @@ class Quadrilateral(Entity):
             if (a_2[0] + a_4[0] * x_hat_2) <= 0.:
                 x_hat_2 = -p / 2. + np.sqrt((p / 2.)**2 - q)
         x_hat_1 = (1. / (a_2[0] + a_4[0] * x_hat_2)) * (x[0] - a_1[0] - a_3[0] * x_hat_2)
+        assert 0. <= x_hat_1 <= 1. or np.isclose(x_hat_1, 0.) or np.isclose(x_hat_1, 1.)
+        assert 0. <= x_hat_2 <= 1. or np.isclose(x_hat_2, 0.) or np.isclose(x_hat_2, 1.)
         return np.array([x_hat_1, x_hat_2])
 
     def derivative_to_local(self, x):
         return np.linalg.inv(self.derivative_to_global(self.to_local(x)))
 
-    def quadrature(self, order):
+    def quadrature(self, order=1):
         points = []
         weights = []
 

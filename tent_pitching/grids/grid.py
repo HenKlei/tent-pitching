@@ -59,6 +59,8 @@ class Element:
         self.vertex_left.patch_elements.append(self)
         self.vertex_right.patch_elements.append(self)
 
+        self.dim = 1
+
     def __str__(self):
         return self.label
 
@@ -83,6 +85,8 @@ class Grid:
 
         for vertex in self.get_vertices():
             vertex.init_patch()
+
+        self.dim = self.elements[0].dim
 
     def get_vertices(self):
         seen = set()

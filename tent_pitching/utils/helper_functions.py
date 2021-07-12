@@ -6,6 +6,16 @@ def flatten(S):
     return S[:1] + flatten(S[1:])
 
 
+def remove_duplicates(data):
+    seen = set()
+    unique_data = []
+    for x in data:
+        if x not in seen:
+            unique_data.append(x)
+            seen.add(x)
+    return unique_data
+
+
 def is_left(p, q, r):
     p = p.coordinates
     q = q.coordinates

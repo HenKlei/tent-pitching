@@ -12,7 +12,7 @@ def test_triangle():
     lines = [Line([vertices[0], vertices[1]]), Line([vertices[1], vertices[2]]),
              Line([vertices[2], vertices[0]])]
     t = Triangle(lines)
-    local_values = [1., 2., 2.]
+    local_values = np.array([1., 2., 2.])
     func = P1DGLocalFunction(t, local_values=local_values)
     assert np.abs(func(np.array([1., 1.5])) - 1.) < EPS
     assert np.linalg.norm(func.gradient(np.array([1., 1.5])) - np.array([0., 4.])) < EPS
@@ -24,7 +24,7 @@ def test_quadrilateral():
     lines = [Line([vertices[0], vertices[1]]), Line([vertices[1], vertices[2]]),
              Line([vertices[2], vertices[3]]), Line([vertices[3], vertices[0]])]
     q = Quadrilateral(lines)
-    local_values = [2., 2., 1.]
+    local_values = np.array([2., 2., 1.])
     func = P1DGLocalFunction(q, local_values=local_values)
     assert np.abs(func(np.array([.75, 1.25])) - 2.) < EPS
     assert np.linalg.norm(func.gradient(np.array([0., 1.25])) - np.array([1., -1.])) < EPS

@@ -1,67 +1,138 @@
-from tent_pitching.functions import SpaceFunction, SpaceTimeFunction, LocalSpaceTimeFunction
-from tent_pitching.discretizations import ExplicitEuler
+import numpy as np
+
+from tent_pitching.functions.global_functions import SpaceTimeFunction
+from tent_pitching.functions.local_functions import P1DGLocalFunction
 from tent_pitching.utils.logger import getLogger
 
 
 class GridOperator:
-    def __init__(self, space_time_grid, discretization, LocalSpaceFunctionType, u_0,
-                 TimeStepperType=ExplicitEuler, local_space_grid_size=1e-1,
-                 local_time_grid_size=1e-1):
+    def __init__(self, space_time_grid, flux, u_0, inflow_boundary_values):
         self.space_time_grid = space_time_grid
+        self.flux = flux
+        self.u_0 = u_0
+        self.inflow_boundary_values = inflow_boundary_values
 
-        assert 0.0 < local_space_grid_size <= 1.0
-        assert 0.0 < local_time_grid_size <= 1.0
-
-        self.local_space_grid_size = local_space_grid_size
-        self.local_time_grid_size = local_time_grid_size
-
-        self.LocalSpaceFunctionType = LocalSpaceFunctionType
-        assert discretization.LocalSpaceFunctionType == self.LocalSpaceFunctionType
-
-        self.u_0 = self.interpolate(u_0)
-        assert isinstance(self.u_0, SpaceFunction)
-
-        self.time_stepper = TimeStepperType(discretization, self.local_time_grid_size)
-
-    def interpolate(self, u):
-        u_interpolated = SpaceFunction(self.space_time_grid.space_grid,
-                                       self.LocalSpaceFunctionType,
-                                       u=u, local_space_grid_size=self.local_space_grid_size)
-        return u_interpolated
+    def space_time_flux(self, u):
+        return np.concatenate((self.flux(u), u), axis=None)
 
     def solve(self):
-        function = SpaceTimeFunction(self.space_time_grid, self.LocalSpaceFunctionType,
-                                     local_space_grid_size=self.local_space_grid_size,
-                                     local_time_grid_size=self.local_time_grid_size)
-
-        function.set_global_initial_value(self.u_0)
+        function = SpaceTimeFunction(self.space_time_grid)
 
         logger = getLogger('tent_pitching.GridOperator')
 
         with logger.block("Iteration over the tents of the space time grid ..."):
             for tent in self.space_time_grid.tents:
                 logger.info(f"Solving on {tent} ...")
-                local_initial_value = function.get_initial_value_on_tent(tent)
-                local_solution = self.solve_local_problem(tent, local_initial_value)
+                inflow_tents = tent.inflow_tents()
+                solution_on_inflow_tents = [function.get_function_on_tent(inflow_tent)
+                                            for inflow_tent in inflow_tents]
+                local_solution = self.solve_local_problem(tent, solution_on_inflow_tents)
                 function.set_function_on_tent(tent, local_solution)
 
         return function
 
-    def solve_local_problem(self, tent, local_initial_value):
+    def solve_local_problem(self, tent, solution_on_inflow_tents,
+                            tol=1e-6, max_iter=None, gamma=1.):
         assert tent in self.space_time_grid.tents
         # local_initial_value has to be list of LocalSpaceFunctions
 
-        local_solution = LocalSpaceTimeFunction(tent, self.LocalSpaceFunctionType,
-                                                local_space_grid_size=self.local_space_grid_size,
-                                                local_time_grid_size=self.local_time_grid_size)
+        local_solution = P1DGLocalFunction(tent.element)
+        num_dofs = local_solution.NUM_DOFS
 
-        local_solution.set_initial_value(local_initial_value)
-        for time in range(1, int(1. / self.local_time_grid_size) + 1):
-            # List of LocalSpaceFunctionType members!
-            old_solution = local_solution.get_value(time - 1)
-            # List of LocalSpaceFunctionType members!
-            update = self.time_stepper(tent, old_solution, time)
-            local_solution.set_value(time, [f1 + self.local_time_grid_size * f2
-                                            for f1, f2 in zip(old_solution, update)])
+        inflow_tents = tent.inflow_tents()
+
+        inflow_vector = np.zeros(num_dofs)
+        for i in range(num_dofs):
+            for inflow_face in tent.inflow_faces():
+                i_th_unit_vector = np.zeros(num_dofs)
+                i_th_unit_vector[i] = 1.
+                phi_i = P1DGLocalFunction(tent.element, i_th_unit_vector)
+                points, weights = inflow_face.quadrature()
+
+                if inflow_face.outside:  # real inflow face
+                    inflow_tent = inflow_face.outside
+                    solution_on_inflow_tent = solution_on_inflow_tents[
+                        inflow_tents.index(inflow_tent)]
+                    for x_hat, w in zip(points, weights):
+                        x = inflow_face.to_global(x_hat)
+                        inflow_vector[i] += (phi_i(x) * w * inflow_face.volume()
+                                             * self.space_time_flux(solution_on_inflow_tent(x)).dot(
+                                                   inflow_face.outer_unit_normal()))
+                else:  # boundary face - either space boundary or time boundary
+                    for x_hat, w in zip(points, weights):
+                        x = inflow_face.to_global(x_hat)
+                        if np.isclose(x[1], 0.):
+                            f = self.space_time_flux(self.u_0(x[0]))
+                        elif np.isclose(x[0], 0.):
+                            f = self.space_time_flux(self.inflow_boundary_values(x[1]))
+                        else:
+                            raise ValueError
+                        inflow_vector[i] += (phi_i(x) * w * inflow_face.volume()
+                                             * f.dot(inflow_face.outer_unit_normal()))
+
+        initial_value = np.ones(num_dofs)
+        local_solution.set_values(initial_value)
+
+        res = self.compute_residuum(tent, local_solution, inflow_vector)
+
+        iteration = 0
+        while np.linalg.norm(res) > tol and (max_iter is None or iteration < max_iter):
+            mat = self.compute_matrix(tent, local_solution)
+            update = np.linalg.solve(mat, -res)
+            local_solution = local_solution + gamma * update
+            res = self.compute_residuum(tent, local_solution, inflow_vector)
+            iteration += 1
 
         return local_solution
+
+    def compute_residuum(self, tent, local_solution, inflow_vector):
+        num_dofs = local_solution.NUM_DOFS
+        residuum = np.zeros(num_dofs)
+
+        for i in range(num_dofs):
+            i_th_unit_vector = np.zeros(num_dofs)
+            i_th_unit_vector[i] = 1.
+            phi_i = P1DGLocalFunction(tent.element, i_th_unit_vector)
+            for outflow_face in tent.outflow_faces():
+                points, weights = outflow_face.quadrature()
+                for x_hat, w in zip(points, weights):
+                    x = outflow_face.to_global(x_hat)
+                    residuum[i] += (phi_i(x) * w * outflow_face.volume()
+                                    * self.space_time_flux(local_solution(x)).dot(
+                                          outflow_face.outer_unit_normal()))
+
+            points, weights = tent.element.quadrature()
+            for x_hat, w in zip(points, weights):
+                x = tent.element.to_global(x_hat)
+                residuum[i] -= (phi_i.gradient(x).dot(self.space_time_flux(local_solution(x))) * w
+                                * tent.element.volume())
+
+        return (residuum + inflow_vector) / tent.element.volume()
+
+    def compute_matrix(self, tent, local_solution):
+        num_dofs = local_solution.NUM_DOFS
+        mat = np.zeros((num_dofs, num_dofs))
+
+        for i in range(num_dofs):
+            i_th_unit_vector = np.zeros(num_dofs)
+            i_th_unit_vector[i] = 1.
+            phi_i = P1DGLocalFunction(tent.element, i_th_unit_vector)
+            for j in range(num_dofs):
+                j_th_unit_vector = np.zeros(num_dofs)
+                j_th_unit_vector[j] = 1.
+                phi_j = P1DGLocalFunction(tent.element, j_th_unit_vector)
+                for outflow_face in tent.outflow_faces():
+                    points, weights = outflow_face.quadrature()
+                    for x_hat, w in zip(points, weights):
+                        x = outflow_face.to_global(x_hat)
+                        mat[i][j] += (phi_j(x) * phi_i(x) * w * outflow_face.volume()
+                                      * self.space_time_flux(local_solution(x)).dot(
+                                            outflow_face.outer_unit_normal()))
+
+                points, weights = tent.element.quadrature()
+                for x_hat, w in zip(points, weights):
+                    x = tent.element.to_global(x_hat)
+                    mat[i][j] -= (phi_j(x) * w * tent.element.volume()
+                                  * phi_i.gradient(x).dot(self.space_time_flux(local_solution(x))))
+
+        return mat / tent.element.volume()

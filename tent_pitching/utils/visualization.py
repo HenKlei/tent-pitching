@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 
 from tent_pitching.grids import SpaceTimeGrid
-from tent_pitching.functions import SpaceFunction, SpaceTimeFunction, LocalSpaceTimeFunction
+from tent_pitching.functions.global_functions import SpaceTimeFunction
 
 
 def plot_space_time_grid(space_time_grid, title=''):
@@ -38,13 +38,12 @@ def plot_space_time_grid(space_time_grid, title=''):
 
 
 def plot_space_function(u, title=''):
-    assert isinstance(u, SpaceFunction)
-
     fig = plt.figure()
     axes = fig.add_subplot(1, 1, 1)
 
-    for values in u.get_function_values():
-        axes.plot(*values)
+    for x in np.linspace(0, 1, 50):
+        for y in np.linspace(0, 1, 50):
+            axes.plot(x, y, u(np.array([x, y])))
 
     axes.set_xlabel('x')
     axes.set_ylabel('u(x)')
@@ -54,8 +53,8 @@ def plot_space_function(u, title=''):
     return fig
 
 
-def plot_space_time_function(u, transformation, title='', interval=1, three_d=False,
-                             space_time_grid=None):
+def plot_space_time_function(u, title='', interval=1, three_d=False, space_time_grid=None,
+                             nx=50, ny=50):
     assert isinstance(u, SpaceTimeFunction)
     assert space_time_grid is None or isinstance(space_time_grid, SpaceTimeGrid)
 
@@ -65,18 +64,20 @@ def plot_space_time_function(u, transformation, title='', interval=1, three_d=Fa
     else:
         axes = fig.add_subplot(1, 1, 1)
 
-    function_values = u.get_function_values(transformation)
+    xs = np.linspace(0., 1., nx)
+    ys = np.linspace(0., 1., ny)
+    xv, yv = np.meshgrid(xs, ys)
+    uv = np.zeros(xv.flatten().shape)
+    for i, (x, y) in enumerate(zip(xv.flatten(), yv.flatten())):
+        uv[i] = u(np.array([x, y]))
 
-    max_val = np.max(np.max(np.array(function_values, dtype=list)))
-    min_val = np.min(np.min(np.array(function_values, dtype=list)))
+    min_val = np.min(uv)
+    max_val = np.max(uv)
 
-    for x_val, y_val, z_val in zip(*function_values):
-        if three_d:
-            scatter = axes.scatter(x_val[::interval], y_val[::interval], z_val[::interval],
-                                   c=z_val[::interval], vmin=min_val, vmax=max_val)
-        else:
-            scatter = axes.scatter(x_val[::interval], y_val[::interval],
-                                   c=z_val[::interval], vmin=min_val, vmax=max_val)
+    if three_d:
+        scatter = axes.scatter(xv, yv, uv, c=uv, vmin=min_val, vmax=max_val)
+    else:
+        scatter = axes.scatter(xv, yv, c=uv, vmin=min_val, vmax=max_val)
 
     fig.colorbar(scatter)
 
@@ -112,8 +113,6 @@ def plot_space_time_function(u, transformation, title='', interval=1, three_d=Fa
 
 
 def plot_on_reference_tent(u_local, transformation, title='', interval=1, three_d=False):
-    assert isinstance(u_local, LocalSpaceTimeFunction)
-
     fig = plt.figure()
     if three_d:
         axes = fig.add_subplot(1, 1, 1, projection='3d')
