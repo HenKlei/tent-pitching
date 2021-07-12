@@ -20,7 +20,7 @@ class SpaceTimeVertex:
 
 class SpaceTimeTent:
     def __init__(self, bottom_space_time_vertex, top_space_time_vertex,
-                 space_time_vertices=None, number=None):
+                 space_time_vertices, number=None):
         self.bottom_space_time_vertex = bottom_space_time_vertex
         self.top_space_time_vertex = top_space_time_vertex
         assert self.bottom_space_time_vertex.space_vertex == self.top_space_time_vertex.space_vertex
@@ -29,24 +29,28 @@ class SpaceTimeTent:
         self.neighboring_tents_above = []
         self.neighboring_tents_below = []
 
-        self.space_time_vertices = space_time_vertices
-        assert 3 <= len(self.space_time_vertices) <= 4
+        assert 3 <= len(space_time_vertices) <= 4
 
         self.number = number
 
-        if len(self.space_time_vertices) == 3:
+        if len(space_time_vertices) == 3:
             vertices = [Vertex(self.bottom_space_time_vertex.coordinates), None, None]
+            stv = [self.bottom_space_time_vertex, None, None]
             lines = [None, None, None]
             orientation = None
-            for v in self.space_time_vertices:
+            for v in space_time_vertices:
                 if (v.space_vertex.coordinate >
                    self.bottom_space_time_vertex.space_vertex.coordinate):
+                    stv[1] = v
+                    stv[2] = self.top_space_time_vertex
                     vertices[1] = Vertex(v.coordinates)
                     vertices[2] = Vertex(self.top_space_time_vertex.coordinates)
                     vertex = v
                     orientation = 'right'
                 elif (v.space_vertex.coordinate <
                       self.bottom_space_time_vertex.space_vertex.coordinate):
+                    stv[1] = self.top_space_time_vertex
+                    stv[2] = v
                     vertices[1] = Vertex(self.top_space_time_vertex.coordinates)
                     vertices[2] = Vertex(v.coordinates)
                     vertex = v
@@ -69,17 +73,20 @@ class SpaceTimeTent:
                 lines[2] = Line([vertices[2], vertices[0]], inside=self,
                                 outside=vertex.tent_below, inflow=True)
             self.element = Triangle(lines)
-        elif len(self.space_time_vertices) == 4:
+        elif len(space_time_vertices) == 4:
             vertices = [Vertex(self.bottom_space_time_vertex.coordinates), None,
                         Vertex(self.top_space_time_vertex.coordinates), None]
+            stv = [self.bottom_space_time_vertex, None, self.top_space_time_vertex, None]
             lines = [None, None, None, None]
-            for v in self.space_time_vertices:
+            for v in space_time_vertices:
                 if (v.space_vertex.coordinate >
                    self.bottom_space_time_vertex.space_vertex.coordinate):
+                    stv[1] = v
                     vertices[1] = Vertex(v.coordinates)
                     right_vertex = v
                 elif (v.space_vertex.coordinate <
                       self.bottom_space_time_vertex.space_vertex.coordinate):
+                    stv[3] = v
                     vertices[3] = Vertex(v.coordinates)
                     left_vertex = v
             if (np.isclose(vertices[1].coordinates[1], vertices[2].coordinates[1])
@@ -99,6 +106,9 @@ class SpaceTimeTent:
                 lines[3] = Line([vertices[3], vertices[0]], inside=self,
                                 outside=left_vertex.tent_below, inflow=True)
                 self.element = Quadrilateral(lines)
+
+        self.space_time_vertices = stv
+        assert set(space_time_vertices) == set(stv)
 
     def __str__(self):
         if self.number is not None:

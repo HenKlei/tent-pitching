@@ -142,3 +142,23 @@ def plot_on_reference_tent(u_local, transformation, title='', interval=1, three_
     axes.set_title(title)
 
     return fig
+
+
+def write_space_time_grid(space_time_grid, filename):
+    import meshio
+
+    points = []
+    triangles = []
+    quads = []
+    for tent in space_time_grid.tents:
+        for vertex in tent.space_time_vertices:
+            points.append(vertex.coordinates)
+        len_points = len(points)
+        if len(tent.space_time_vertices) == 3:
+            triangles.append([len_points-3, len_points-2, len_points-1])
+        elif len(tent.space_time_vertices) == 4:
+            quads.append([len_points-4, len_points-3, len_points-2, len_points-1])
+
+    cells = [('triangle', triangles), ('quad', quads)]
+
+    meshio.write_points_cells(f'{filename}.vtu', points, cells)
