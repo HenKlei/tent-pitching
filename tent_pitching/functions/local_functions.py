@@ -28,16 +28,15 @@ class P1DGLocalFunction:
 
     def __add__(self, u):
         if isinstance(u, P1DGLocalFunction):
-            self.set_values(self.local_values + u.local_values)
-            return self
+            assert self.element == u.element
+            return P1DGLocalFunction(self.element,
+                                     local_values=(self.local_values + u.local_values))
         assert u.shape == (self.NUM_DOFS,)
-        self.set_values(self.local_values + u)
-        return self
+        return P1DGLocalFunction(self.element, local_values=(self.local_values + u))
 
     def __mul__(self, x):
         assert isinstance(x, int) or isinstance(x, float)
-        self.set_values(x * self.local_values)
-        return self
+        return P1DGLocalFunction(self.element, local_values=(self.local_values * x))
 
     __rmul__ = __mul__
 

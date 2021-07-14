@@ -1,3 +1,5 @@
+import numpy as np
+
 from tent_pitching.functions.local_functions import P1DGLocalFunction
 
 
@@ -52,3 +54,13 @@ class SpaceTimeFunction:
     def interpolate(self, u):
         for function in self.functions:
             function.interpolate(u)
+
+    def two_norm(self):
+        norm = 0.
+        for function in self.functions:
+            points, weights = function.element.quadrature()
+            for x_hat, w in zip(points, weights):
+                x = function.element.to_global(x_hat)
+                norm += w * function.element.volume() * function(x)**2
+
+        return np.sqrt(norm)

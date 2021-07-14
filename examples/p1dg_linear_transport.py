@@ -8,7 +8,6 @@ from tent_pitching.functions import SpaceTimeFunction
 from tent_pitching.grids import create_uniform_grid
 from tent_pitching.operators import GridOperator
 from tent_pitching.utils.visualization import plot_space_time_function, write_space_time_grid
-from tent_pitching.utils.error_computation import compute_l2_errors
 
 
 T_MAX = 1.
@@ -64,7 +63,9 @@ def main(mu: float = Option(1., help='Parameter mu that determines the velocity'
     plot_error.savefig(FILEPATH_RESULTS +
                        f'u_mu_{str(mu).replace(".", "_")}_n_{n}_global_error.pdf')
 
-    relative_error, absolute_error = compute_l2_errors(u, exact_solution)
+    absolute_error = (u - exact_solution_space_time_function).two_norm()
+    norm_exact_solution = exact_solution_space_time_function.two_norm()
+    relative_error = absolute_error / norm_exact_solution
 
     with open(FILEPATH_RESULTS + 'errors_linear_transport_st_dg_p1.txt', 'a') as file_obj:
         file_obj.write(f"{mu}\t{n}\t{len(space_time_grid.tents)}\t"
