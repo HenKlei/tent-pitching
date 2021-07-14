@@ -4,11 +4,10 @@ import matplotlib.pyplot as plt
 from tent_pitching import perform_tent_pitching
 from tent_pitching.grids import create_uniform_grid
 from tent_pitching.operators import GridOperator
-from tent_pitching.utils.visualization import (plot_space_time_grid, plot_space_time_function,
-                                               write_space_time_grid)
+from tent_pitching.utils.visualization import plot_space_time_function, write_space_time_grid
 
 
-GLOBAL_SPACE_GRID_SIZE = 1./20.
+GLOBAL_SPACE_GRID_SIZE = 1./100.
 grid = create_uniform_grid(GLOBAL_SPACE_GRID_SIZE)
 T_MAX = 1.
 MU = 1.
@@ -19,10 +18,7 @@ def characteristic_speed(x):
     return MU + EPS
 
 
-space_time_grid = perform_tent_pitching(grid, T_MAX, characteristic_speed, n_max=1000)
-
-plot_space_time_grid(space_time_grid, title='Spacetime mesh obtained via tent pitching')
-plt.show()
+space_time_grid = perform_tent_pitching(grid, T_MAX, characteristic_speed, n_max=20000)
 
 write_space_time_grid(space_time_grid, 'grid_burgers')
 

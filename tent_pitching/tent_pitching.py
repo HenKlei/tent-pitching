@@ -26,7 +26,7 @@ def perform_tent_pitching(space_grid, t_max, characteristic_speed, n_max=1000):
 
     if space_time_grid.advancing_front.get_feasible_vertex() is not None:
         assert iteration == n_max
-        raise Exception(f"The maximum number of {n_max} tents is reached without"
+        raise Exception(f"The maximum number of {n_max} tents is reached without "
                         "finishing the spacetime meshing process!")
 
     return space_time_grid

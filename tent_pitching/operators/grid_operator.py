@@ -45,35 +45,6 @@ class GridOperator:
 
         inflow_tents = tent.inflow_tents()
 
-        inflow_vector = np.zeros(num_dofs)
-        for i in range(num_dofs):
-            for inflow_face in tent.inflow_faces():
-                i_th_unit_vector = np.zeros(num_dofs)
-                i_th_unit_vector[i] = 1.
-                phi_i = P1DGLocalFunction(tent.element, i_th_unit_vector)
-                points, weights = inflow_face.quadrature()
-
-                if inflow_face.outside:  # real inflow face
-                    inflow_tent = inflow_face.outside
-                    solution_on_inflow_tent = solution_on_inflow_tents[
-                        inflow_tents.index(inflow_tent)]
-                    for x_hat, w in zip(points, weights):
-                        x = inflow_face.to_global(x_hat)
-                        inflow_vector[i] += (phi_i(x) * w * inflow_face.volume()
-                                             * self.space_time_flux(solution_on_inflow_tent(x)).dot(
-                                                   inflow_face.outer_unit_normal()))
-                else:  # boundary face - either space boundary or time boundary
-                    for x_hat, w in zip(points, weights):
-                        x = inflow_face.to_global(x_hat)
-                        if np.isclose(x[1], 0.):
-                            f = self.space_time_flux(self.u_0(x[0]))
-                        elif np.isclose(x[0], 0.):
-                            f = self.space_time_flux(self.inflow_boundary_values(x[1]))
-                        else:
-                            raise ValueError
-                        inflow_vector[i] += (phi_i(x) * w * inflow_face.volume()
-                                             * f.dot(inflow_face.outer_unit_normal()))
-
         integral_inflow = 0.
         for inflow_face in tent.inflow_faces():
             points, weights = inflow_face.quadrature()
@@ -107,6 +78,35 @@ class GridOperator:
 
         initial_value = - np.ones(num_dofs) * integral_inflow / S_t
         local_solution.set_values(initial_value)
+
+        inflow_vector = np.zeros(num_dofs)
+        for i in range(num_dofs):
+            for inflow_face in tent.inflow_faces():
+                i_th_unit_vector = np.zeros(num_dofs)
+                i_th_unit_vector[i] = 1.
+                phi_i = P1DGLocalFunction(tent.element, i_th_unit_vector)
+                points, weights = inflow_face.quadrature()
+
+                if inflow_face.outside:  # real inflow face
+                    inflow_tent = inflow_face.outside
+                    solution_on_inflow_tent = solution_on_inflow_tents[
+                        inflow_tents.index(inflow_tent)]
+                    for x_hat, w in zip(points, weights):
+                        x = inflow_face.to_global(x_hat)
+                        inflow_vector[i] += (phi_i(x) * w * inflow_face.volume()
+                                             * self.space_time_flux(solution_on_inflow_tent(x)).dot(
+                                                   inflow_face.outer_unit_normal()))
+                else:  # boundary face - either space boundary or time boundary
+                    for x_hat, w in zip(points, weights):
+                        x = inflow_face.to_global(x_hat)
+                        if np.isclose(x[1], 0.):
+                            f = self.space_time_flux(self.u_0(x[0]))
+                        elif np.isclose(x[0], 0.):
+                            f = self.space_time_flux(self.inflow_boundary_values(x[1]))
+                        else:
+                            raise ValueError
+                        inflow_vector[i] += (phi_i(x) * w * inflow_face.volume()
+                                             * f.dot(inflow_face.outer_unit_normal()))
 
         res = self.compute_residuum(tent, local_solution, inflow_vector)
 
