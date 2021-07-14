@@ -27,9 +27,19 @@ class P1DGLocalFunction:
         return self.evaluate(x)
 
     def __add__(self, u):
+        if isinstance(u, P1DGLocalFunction):
+            self.set_values(self.local_values + u.local_values)
+            return self
         assert u.shape == (self.NUM_DOFS,)
         self.set_values(self.local_values + u)
         return self
+
+    def __mul__(self, x):
+        assert isinstance(x, int) or isinstance(x, float)
+        self.set_values(x * self.local_values)
+        return self
+
+    __rmul__ = __mul__
 
     def set_values(self, u):
         assert u.shape == (self.NUM_DOFS,)
@@ -57,3 +67,9 @@ class P1DGLocalFunction:
         rhs = np.array([self.local_values[1]-self.local_values[0],
                         self.local_values[2]-self.local_values[0]])
         return np.linalg.solve(mat, rhs)
+
+    def interpolate(self, u):
+        values = np.zeros(self.NUM_DOFS)
+        for i, x_hat in enumerate(self.local_points):
+            values[i] = u(self.element.to_global(x_hat))
+        self.set_values(values)
