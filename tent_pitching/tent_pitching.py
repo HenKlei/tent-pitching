@@ -15,7 +15,7 @@ def perform_tent_pitching(space_grid, t_max, characteristic_speed, n_max=1000):
             if space_time_vertex is None:
                 break
 
-            logger.info(f"Pitching tent on {space_time_vertex} ...")
+            logger.info(f"Pitching tent {iteration} on {space_time_vertex} ...")
 
             space_time_grid.pitch_tent(space_time_vertex)
 
