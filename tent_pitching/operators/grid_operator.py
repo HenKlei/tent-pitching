@@ -6,12 +6,14 @@ from tent_pitching.utils.logger import getLogger
 
 
 class GridOperator:
-    def __init__(self, space_time_grid, flux, flux_derivative, u_0, inflow_boundary_values):
+    def __init__(self, space_time_grid, flux, flux_derivative, u_0, inflow_boundary_values,
+                 LocalFunctionType=P1DGLocalFunction):
         self.space_time_grid = space_time_grid
         self.flux = flux
         self.flux_derivative = flux_derivative
         self.u_0 = u_0
         self.inflow_boundary_values = inflow_boundary_values
+        self.LocalFunctionType = LocalFunctionType
 
     def space_time_flux(self, u):
         return np.concatenate((self.flux(u), u), axis=None)
@@ -40,7 +42,7 @@ class GridOperator:
         assert tent in self.space_time_grid.tents
         # local_initial_value has to be list of LocalSpaceFunctions
 
-        local_solution = P1DGLocalFunction(tent.element)
+        local_solution = self.LocalFunctionType(tent.element)
         num_dofs = local_solution.NUM_DOFS
 
         inflow_tents = tent.inflow_tents()
@@ -84,7 +86,7 @@ class GridOperator:
             for inflow_face in tent.inflow_faces():
                 i_th_unit_vector = np.zeros(num_dofs)
                 i_th_unit_vector[i] = 1.
-                phi_i = P1DGLocalFunction(tent.element, i_th_unit_vector)
+                phi_i = self.LocalFunctionType(tent.element, i_th_unit_vector)
                 points, weights = inflow_face.quadrature()
 
                 if inflow_face.outside:  # real inflow face
@@ -134,7 +136,7 @@ class GridOperator:
         for i in range(num_dofs):
             i_th_unit_vector = np.zeros(num_dofs)
             i_th_unit_vector[i] = 1.
-            phi_i = P1DGLocalFunction(tent.element, i_th_unit_vector)
+            phi_i = self.LocalFunctionType(tent.element, i_th_unit_vector)
             for outflow_face in tent.outflow_faces():
                 points, weights = outflow_face.quadrature()
                 for x_hat, w in zip(points, weights):
@@ -158,11 +160,11 @@ class GridOperator:
         for i in range(num_dofs):
             i_th_unit_vector = np.zeros(num_dofs)
             i_th_unit_vector[i] = 1.
-            phi_i = P1DGLocalFunction(tent.element, i_th_unit_vector)
+            phi_i = self.LocalFunctionType(tent.element, i_th_unit_vector)
             for j in range(num_dofs):
                 j_th_unit_vector = np.zeros(num_dofs)
                 j_th_unit_vector[j] = 1.
-                phi_j = P1DGLocalFunction(tent.element, j_th_unit_vector)
+                phi_j = self.LocalFunctionType(tent.element, j_th_unit_vector)
                 for outflow_face in tent.outflow_faces():
                     points, weights = outflow_face.quadrature()
                     for x_hat, w in zip(points, weights):

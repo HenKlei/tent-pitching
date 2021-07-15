@@ -7,10 +7,12 @@ class SpaceTimeFunction:
     """
     Function that is defined for each tent in the space time grid on its reference element.
     """
-    def __init__(self, space_time_grid):
+    def __init__(self, space_time_grid, LocalFunctionType=P1DGLocalFunction):
         self.space_time_grid = space_time_grid
 
-        self.functions = [P1DGLocalFunction(tent.element) for tent in self.space_time_grid.tents]
+        self.LocalFunctionType = LocalFunctionType
+        self.functions = [self.LocalFunctionType(tent.element)
+                          for tent in self.space_time_grid.tents]
 
     def __call__(self, x):
         return self.evaluate(x)
@@ -48,7 +50,7 @@ class SpaceTimeFunction:
 
     def set_function_on_tent(self, tent, u):
         assert tent in self.space_time_grid.tents
-        assert isinstance(u, P1DGLocalFunction)
+        assert isinstance(u, self.LocalFunctionType)
         self.functions[self.space_time_grid.tents.index(tent)] = u
 
     def interpolate(self, u):

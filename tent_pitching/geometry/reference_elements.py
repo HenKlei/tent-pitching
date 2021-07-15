@@ -181,15 +181,23 @@ class Triangle(Entity):
     def derivative_to_local(self, x):
         return np.linalg.inv(self.derivative_to_global(self.to_local(x)))
 
-    def quadrature(self, order=1):
-        assert order in (0, 1)
+    def quadrature(self, order=6):
+        assert order in (0, 1, 6)
         if order == 0:
-            return [np.array([1./3., 1./3.] + [0, ] * self.codim)], [1.]
+            return [np.array([1./3., 1./3.] + [0., ] * self.codim)], [1.]
         elif order == 1:
-            return ([np.array([0., 0.] + [0, ] * self.codim),
-                     np.array([1., 0.] + [0, ] * self.codim),
-                     np.array([0., 1.] + [0, ] * self.codim)],
-                    [1./3., 1./3., 1./3.])
+            return ([np.array([0., 0.] + [0., ] * self.codim),
+                     np.array([1., 0.] + [0., ] * self.codim),
+                     np.array([0., 1.] + [0., ] * self.codim)],
+                    [1./3., ] * 3)
+        elif order == 6:
+            return ([np.array([0.659027622374092, 0.231933368553031] + [0, ] * self.codim),
+                     np.array([0.659027622374092, 0.109039009072877] + [0, ] * self.codim),
+                     np.array([0.231933368553031, 0.659027622374092] + [0, ] * self.codim),
+                     np.array([0.231933368553031, 0.109039009072877] + [0, ] * self.codim),
+                     np.array([0.109039009072877, 0.659027622374092] + [0, ] * self.codim),
+                     np.array([0.109039009072877, 0.231933368553031] + [0, ] * self.codim)],
+                    [1./6., ] * 6)
 
     def center(self):
         return self.to_global(np.array([1./3., 1./3.] + [0., ] * self.codim))
@@ -276,7 +284,7 @@ class Quadrilateral(Entity):
     def derivative_to_local(self, x):
         return np.linalg.inv(self.derivative_to_global(self.to_local(x)))
 
-    def quadrature(self, order=1):
+    def quadrature(self, order=3):
         points = []
         weights = []
 

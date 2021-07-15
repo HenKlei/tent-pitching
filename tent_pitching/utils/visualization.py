@@ -37,13 +37,17 @@ def plot_space_time_grid(space_time_grid, title=''):
     return fig
 
 
-def plot_space_function(u, title=''):
+def plot_space_function(u, title='', n=100):
     fig = plt.figure()
     axes = fig.add_subplot(1, 1, 1)
 
-    for x in np.linspace(0, 1, 50):
-        for y in np.linspace(0, 1, 50):
-            axes.plot(x, y, u(np.array([x, y])))
+    xs = []
+    ys = []
+    for x in np.linspace(0, 1, n):
+        xs.append(x)
+        ys.append(u(x))
+
+    axes.scatter(xs, ys)
 
     axes.set_xlabel('x')
     axes.set_ylabel('u(x)')
@@ -102,38 +106,6 @@ def plot_space_time_function(u, title='', interval=1, three_d=False, space_time_
 
         for vertex in space_time_grid.space_time_vertices:
             axes.plot(*vertex.coordinates, marker='o', color='lightblue')
-
-    axes.set_xlabel('x')
-    axes.set_ylabel('t')
-    if not three_d:
-        axes.set_aspect('equal')
-    axes.set_title(title)
-
-    return fig
-
-
-def plot_on_reference_tent(u_local, transformation, title='', interval=1, three_d=False):
-    fig = plt.figure()
-    if three_d:
-        axes = fig.add_subplot(1, 1, 1, projection='3d')
-    else:
-        axes = fig.add_subplot(1, 1, 1)
-
-    function_values = u_local.get_function_values(transformation)
-
-    max_val = np.max(np.max(np.array(function_values, dtype=list)))
-    min_val = np.min(np.min(np.array(function_values, dtype=list)))
-
-    for i, (x_val, _, z_val) in enumerate(zip(*function_values)):
-        y_val = [(i % len(u_local.function[0])) * u_local.local_time_grid_size, ] * len(z_val)
-        if three_d:
-            scatter = axes.scatter(x_val[::interval], y_val[::interval], z_val[::interval],
-                                   c=z_val[::interval], vmin=min_val, vmax=max_val)
-        else:
-            scatter = axes.scatter(x_val[::interval], y_val[::interval],
-                                   c=z_val[::interval], vmin=min_val, vmax=max_val)
-
-    fig.colorbar(scatter)
 
     axes.set_xlabel('x')
     axes.set_ylabel('t')
