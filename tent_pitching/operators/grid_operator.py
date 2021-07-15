@@ -38,7 +38,7 @@ class GridOperator:
         return function
 
     def solve_local_problem(self, tent, solution_on_inflow_tents,
-                            tol=1e-6, max_iter=None):
+                            tol=1e-6, max_iter=1000):
         assert tent in self.space_time_grid.tents
         # local_initial_value has to be list of LocalSpaceFunctions
 
@@ -118,6 +118,7 @@ class GridOperator:
 
         iteration = 0
         while np.linalg.norm(res) > tol and (max_iter is None or iteration < max_iter):
+            logger.info(f"Iteration {iteration}, residual norm {np.linalg.norm(res):.3e} ...")
             mat = self.compute_matrix(tent, local_solution)
             update = np.linalg.solve(mat, -res)
             local_solution = local_solution + update

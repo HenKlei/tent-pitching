@@ -4,10 +4,11 @@ import numpy as np
 from typer import Option, run
 
 from tent_pitching import perform_tent_pitching
-from tent_pitching.functions import SpaceTimeFunction
 from tent_pitching.grids import create_uniform_grid
 from tent_pitching.operators import GridOperator
-from tent_pitching.utils.visualization import plot_space_time_function, write_space_time_grid
+from tent_pitching.utils.error_computations import compute_error
+from tent_pitching.utils.visualization import (plot_space_time_function, write_space_time_grid,
+                                               plot_space_time_function_difference)
 
 
 T_MAX = 1.
@@ -26,11 +27,6 @@ def main(mu: float = Option(1., help='Parameter mu that determines the velocity'
     def characteristic_speed(x):
         return mu + EPS
 
-    space_time_grid = perform_tent_pitching(grid, T_MAX, characteristic_speed, n_max=None)
-
-    write_space_time_grid(space_time_grid, FILEPATH_RESULTS +
-                          f'grid_linear_transport_mu_{str(mu).replace(".", "_")}_n_{n}')
-
     def linear_transport_flux(u):
         return np.array([mu * u, ])
 
@@ -45,6 +41,11 @@ def main(mu: float = Option(1., help='Parameter mu that determines the velocity'
     def inflow_boundary_values(x):
         return 1.
 
+    space_time_grid = perform_tent_pitching(grid, T_MAX, characteristic_speed, n_max=None)
+
+    write_space_time_grid(space_time_grid, FILEPATH_RESULTS +
+                          f'grid_linear_transport_mu_{str(mu).replace(".", "_")}_n_{n}')
+
     grid_operator = GridOperator(space_time_grid, linear_transport_flux,
                                  linear_transport_flux_derivative,
                                  u_0_function, inflow_boundary_values)
@@ -57,15 +58,15 @@ def main(mu: float = Option(1., help='Parameter mu that determines the velocity'
     def exact_solution(x):
         return u_0_function(x[0] - mu * x[1])
 
-    exact_solution_space_time_function = SpaceTimeFunction(space_time_grid)
-    exact_solution_space_time_function.interpolate(exact_solution)
-    plot_error = plot_space_time_function(u - exact_solution_space_time_function)
+    plot_solution = plot_space_time_function(exact_solution)
+    plot_solution.savefig(FILEPATH_RESULTS
+                          + f'exact_solution_mu_{str(mu).replace(".", "_")}_n_{n}_global.pdf')
+
+    plot_error = plot_space_time_function_difference(u, exact_solution)
     plot_error.savefig(FILEPATH_RESULTS +
                        f'u_mu_{str(mu).replace(".", "_")}_n_{n}_global_error.pdf')
 
-    absolute_error = (u - exact_solution_space_time_function).two_norm()
-    norm_exact_solution = exact_solution_space_time_function.two_norm()
-    relative_error = absolute_error / norm_exact_solution
+    relative_error, absolute_error = compute_error(u, exact_solution)
 
     with open(FILEPATH_RESULTS + 'errors_linear_transport_st_dg_p1.txt', 'a') as file_obj:
         file_obj.write(f"{mu}\t{n}\t{len(space_time_grid.tents)}\t"
