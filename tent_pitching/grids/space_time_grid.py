@@ -1,5 +1,7 @@
 import numpy as np
 
+from tent_pitching.geometry.reference_elements import Vertex, Line, Triangle, Quadrilateral
+
 
 class SpaceTimeVertex:
     def __init__(self, space_vertex, time):
@@ -7,7 +9,8 @@ class SpaceTimeVertex:
         self.time = time
         self.potential_tent_height = 0.
 
-        self.coordinates = [self.space_vertex.coordinate, self.time, ]
+        self.coordinates = np.concatenate((self.space_vertex.coordinate, np.array([self.time, ])),
+                                          axis=None)
 
         self.tent_below = None
 
@@ -17,7 +20,7 @@ class SpaceTimeVertex:
 
 class SpaceTimeTent:
     def __init__(self, bottom_space_time_vertex, top_space_time_vertex,
-                 space_time_vertices=None, number=None):
+                 space_time_vertices, number=None):
         self.bottom_space_time_vertex = bottom_space_time_vertex
         self.top_space_time_vertex = top_space_time_vertex
         assert self.bottom_space_time_vertex.space_vertex == self.top_space_time_vertex.space_vertex
@@ -26,10 +29,86 @@ class SpaceTimeTent:
         self.neighboring_tents_above = []
         self.neighboring_tents_below = []
 
-        self.space_time_vertices = space_time_vertices
-        assert len(self.space_time_vertices) <= 4
+        assert 3 <= len(space_time_vertices) <= 4
 
         self.number = number
+
+        if len(space_time_vertices) == 3:
+            vertices = [Vertex(self.bottom_space_time_vertex.coordinates), None, None]
+            stv = [self.bottom_space_time_vertex, None, None]
+            lines = [None, None, None]
+            orientation = None
+            for v in space_time_vertices:
+                if (v.space_vertex.coordinate >
+                   self.bottom_space_time_vertex.space_vertex.coordinate):
+                    stv[1] = v
+                    stv[2] = self.top_space_time_vertex
+                    vertices[1] = Vertex(v.coordinates)
+                    vertices[2] = Vertex(self.top_space_time_vertex.coordinates)
+                    vertex = v
+                    orientation = 'right'
+                elif (v.space_vertex.coordinate <
+                      self.bottom_space_time_vertex.space_vertex.coordinate):
+                    stv[1] = self.top_space_time_vertex
+                    stv[2] = v
+                    vertices[1] = Vertex(self.top_space_time_vertex.coordinates)
+                    vertices[2] = Vertex(v.coordinates)
+                    vertex = v
+                    orientation = 'left'
+
+            assert orientation is not None
+            if orientation == 'right':
+                lines[0] = Line([vertices[0], vertices[1]], inside=self,
+                                outside=vertex.tent_below, inflow=True)
+                lines[1] = Line([vertices[1], vertices[2]], inside=self)
+                if (self.bottom_space_time_vertex.space_vertex.is_boundary_vertex()
+                   and self.top_space_time_vertex.space_vertex.is_boundary_vertex()):
+                    lines[2] = Line([vertices[2], vertices[0]], inside=self,
+                                    outside=None, inflow=True)
+                else:
+                    lines[2] = Line([vertices[2], vertices[0]], inside=self)
+            elif orientation == 'left':
+                lines[0] = Line([vertices[0], vertices[1]], inside=self)
+                lines[1] = Line([vertices[1], vertices[2]], inside=self)
+                lines[2] = Line([vertices[2], vertices[0]], inside=self,
+                                outside=vertex.tent_below, inflow=True)
+            self.element = Triangle(lines)
+        elif len(space_time_vertices) == 4:
+            vertices = [Vertex(self.bottom_space_time_vertex.coordinates), None,
+                        Vertex(self.top_space_time_vertex.coordinates), None]
+            stv = [self.bottom_space_time_vertex, None, self.top_space_time_vertex, None]
+            lines = [None, None, None, None]
+            for v in space_time_vertices:
+                if (v.space_vertex.coordinate >
+                   self.bottom_space_time_vertex.space_vertex.coordinate):
+                    stv[1] = v
+                    vertices[1] = Vertex(v.coordinates)
+                    right_vertex = v
+                elif (v.space_vertex.coordinate <
+                      self.bottom_space_time_vertex.space_vertex.coordinate):
+                    stv[3] = v
+                    vertices[3] = Vertex(v.coordinates)
+                    left_vertex = v
+            if (np.isclose(vertices[1].coordinates[1], vertices[2].coordinates[1])
+               and np.isclose(vertices[2].coordinates[1], vertices[3].coordinates[1])):
+                lines[0] = Line([vertices[0], vertices[1]], inside=self,
+                                outside=right_vertex.tent_below, inflow=True)
+                lines[1] = Line([vertices[1], vertices[3]], inside=self)
+                lines[2] = Line([vertices[3], vertices[0]], inside=self,
+                                outside=left_vertex.tent_below, inflow=True)
+                lines = lines[:-1]
+                self.element = Triangle(lines)
+            else:
+                lines[0] = Line([vertices[0], vertices[1]], inside=self,
+                                outside=right_vertex.tent_below, inflow=True)
+                lines[1] = Line([vertices[1], vertices[2]], inside=self)
+                lines[2] = Line([vertices[2], vertices[3]], inside=self)
+                lines[3] = Line([vertices[3], vertices[0]], inside=self,
+                                outside=left_vertex.tent_below, inflow=True)
+                self.element = Quadrilateral(lines)
+
+        self.space_time_vertices = stv
+        assert set(space_time_vertices) == set(stv)
 
     def __str__(self):
         if self.number is not None:
@@ -41,9 +120,20 @@ class SpaceTimeTent:
         x = point[0]
         t = point[1]
         if (x in self.get_space_patch()
-           and self.get_bottom_front_value(x) <= t <= self.get_top_front_value(x)):
+           and (self.get_bottom_front_value(x) <= t <= self.get_top_front_value(x)
+                or np.isclose(self.get_bottom_front_value(x), t)
+                or np.isclose(self.get_top_front_value(x), t))):
             return True
         return False
+
+    def inflow_tents(self):
+        return [tent[0] for tent in self.neighboring_tents_below]
+
+    def inflow_faces(self):
+        return [f for f in self.element.get_subentities(codim=1) if f.inflow]
+
+    def outflow_faces(self):
+        return [f for f in self.element.get_subentities(codim=1) if not f.inflow]
 
     def has_initial_boundary(self):
         if sum(vertex.time == 0.0 for vertex in self.space_time_vertices) >= 2:
@@ -188,7 +278,11 @@ class AdvancingFront:
 
     def get_feasible_vertex(self):
         if len(self.potential_pitch_locations) > 0:
-            return self.potential_pitch_locations[0]
+            if np.isclose(self.potential_pitch_locations[0].potential_tent_height, 0.):
+                self.potential_pitch_locations.pop(0)
+                return self.get_feasible_vertex()
+            else:
+                return self.potential_pitch_locations[0]
             # return next(iter(self.potential_pitch_locations))
         return None
 
@@ -205,6 +299,7 @@ class SpaceTimeGrid:
                                               self.characteristic_speed)
         self.space_time_vertices = list(self.advancing_front.space_time_vertices)
         self.tents = []
+        self.dim = self.space_grid.dim + 1
 
     def pitch_tent(self, space_time_vertex):
         assert space_time_vertex in self.advancing_front.potential_pitch_locations

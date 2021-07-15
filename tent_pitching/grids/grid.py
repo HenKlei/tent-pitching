@@ -1,4 +1,5 @@
 import itertools
+import numpy as np
 
 from tent_pitching.grids import Patch
 
@@ -58,6 +59,8 @@ class Element:
         self.vertex_left.patch_elements.append(self)
         self.vertex_right.patch_elements.append(self)
 
+        self.dim = 1
+
     def __str__(self):
         return self.label
 
@@ -82,6 +85,8 @@ class Grid:
 
         for vertex in self.get_vertices():
             vertex.init_patch()
+
+        self.dim = self.elements[0].dim
 
     def get_vertices(self):
         seen = set()
@@ -110,7 +115,7 @@ def create_uniform_grid(global_space_grid_size, left=0., right=1.):
 
     vertices = []
     for i in range(num_vertices):
-        vertices.append(Vertex(left + i * diff, label=f"Vertex {i}"))
+        vertices.append(Vertex(np.array(left + i * diff), label=f"Vertex {i}"))
 
     def pairwise(iterable):
         "s -> (s0,s1), (s1,s2), (s2, s3), ..."
